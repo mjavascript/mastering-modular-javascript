@@ -1,0 +1,49 @@
+{
+  "name": "oreillymedia/mastering-modular-javascript",
+  "branches": ["master"],
+  "export_formats": ["html"],
+  "files": [
+    "sections/cover.html",
+    "sections/toc.html",
+    "chapters/ch01.asciidoc"
+  ],
+  "formats": {
+    "pdf": {
+      "version": "web",
+      "toc": true,
+      "index": true,
+      "syntaxhighlighting": true,
+      "show_comments": false,
+      "color_count": false,
+      "trim_size": "7inx9.1875in"
+    },
+    "epub": {
+      "toc": true,
+      "index": true,
+      "syntaxhighlighting": true,
+      "epubcheck": true,
+      "show_comments": false,
+      "downsample_images": false
+    },
+    "mobi": {
+      "toc": true,
+      "index": true,
+      "syntaxhighlighting": true,
+      "show_comments": false,
+      "downsample_images": false
+    },
+    "html": {
+      "toc": true,
+      "index": true,
+      "syntaxhighlighting": true,
+      "show_comments": false,
+      "consolidated": false
+    }
+  },
+  "theme": "oreillymedia/animal_theme",
+  "title": "Mastering Modular JavaScript",
+  "templating": false,
+  "print_isbn13": "",
+  "lang": "en",
+  "accent_color": "cmyk(100%, 3%, 50%, 0%)"
+}
