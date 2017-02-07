@@ -4,7 +4,7 @@
 
 > 📦 Module thinking, principles, design patterns and best practices.
 
-[<img align='right' src='https://i.imgur.com/721YHrg.png' />][campaign]
+[<img align='right' src='https://i.imgur.com/wOz6fTX.png' />][campaign]
 
 Modular JavaScript is a book series with the mission of improving our collective understanding of writing robust, well-tested, modular JavaScript code. Mastering Modular JavaScript is the second book in the series, and it discusses modular JavaScript application deveolpment. Mastering Modular JavaScript includes hundreds of real-world patterns and practices, as well as detailed explanations of what works and what hasn’t when it comes to leveraging ES6 in the wild.
 
@@ -14,7 +14,7 @@ Modular JavaScript is a book series with the mission of improving our collective
 👏 **Contribute** to the [source code repository][contrib] on *GitHub*  
 🦄 **Read** the free [HTML version of the book][toc] on *Pony Foo*  
 
-This book focuses on two aspects of JavaScript development: modularity and ES6 features. You’ll learn how to tackle application development by following a scale-out approach. As pieces of your codebase grow too big, you can break them up into smaller modules.
+This book focuses on two aspects of JavaScript development: modularity and leveraging ES6 features. You’ll learn how to tackle application development by following a scale-out approach. As pieces of your codebase grow too big, you can break them up into smaller modules.
 
 ## Mastering Modular JavaScript is Free to Read!
 
