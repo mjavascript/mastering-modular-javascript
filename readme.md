@@ -4,7 +4,7 @@
 
 > 📦 Module thinking, principles, design patterns and best practices.
 
-[<img align='right' src='https://i.imgur.com/wOz6fTX.png' />][campaign]
+[<img align='right' src='http://i.imgur.com/2QRmp82.png' />][toc]
 
 Modular JavaScript is a book series with the mission of improving our collective understanding of writing robust, well-tested, modular JavaScript code. Mastering Modular JavaScript is the second book in the series, and it discusses modular JavaScript application deveolpment. Mastering Modular JavaScript includes hundreds of real-world patterns and practices, as well as detailed explanations of what works and what hasn’t when it comes to leveraging ES6 in the wild.
 
