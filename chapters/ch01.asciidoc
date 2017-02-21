@@ -1,4 +1,0 @@
-[[module-thinking]]
-== Module Thinking
-
-..

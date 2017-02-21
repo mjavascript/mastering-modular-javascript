@@ -1,0 +1,112 @@
+[[modularity-principles]]
+== Modularity Principles
+
+Complexity is a loaded term for a nuanced topic. What does complex mean? A dictionary defines complexfootnote:[The dictionary definition might help shed a light on this topic: https://mjavascript.com/out/complex.] as something that's "composed of many interconnected parts", but that's not the problem we generally refer to when we speak of complexity in the context of programming: a program may have hundreds or thousands of files and still be considered relatively simple.
+
+The next two definitions, offered by that same dictionary, might be more revealing in the context of program design.
+
+- "characterized by a very complicated or involved arrangement of parts, units, etc."
+- "so complicated or intricate as to be hard to understand or deal with"
+
+The first indicates a program can become complex when its parts are arranged in a complicated manner, i.e: the interconnections among parts become a pain point. This could stem from convoluted interfaces or lacking documentation, and it's one of the aspects of complexity that we'll tackle in this book.
+
+We can interpret the second definition as the other side of the complexity coin. Components so complicated that their implementation is hard to understand, debug, or extend. Most of the book is devoted to counterbalance and avoid this aspect of complexity.
+
+In broad terms, something is complex when it becomes hard to grasp or fully understand. By that definition, anything in a typical program can be complex: a block of code, a single statement, the API layer, its documentation, tests, the directory structure, coding conventions, or even a variable's name.
+
+Measuring complexity by lines of code would be trite: a file with thousands of lines of code can be simple if it's just a list of constants like country codes or action types. Conversely, a file with a couple dozen lines of code could be insurmountably complex, not only in its interface but particularly in its implementation. Add together a few complex components and, soon, you'll want nothing to do with the codebase.
+
+Cyclomatic complexity is the amount of unique code paths a program can take, and it may be a better metric when measuring how complex a component is. Cyclomatic complexity only allows us to measure how complex a component has become. On its own, however, tracking this metric does little to significantly reduce complexity across our codebase or improve our coding style.
+
+Modularity tackles the complexity problem in program design by opting for small modules with a clear-cut and well-tested API that's also documented. Defining a clear-cut API tackles interconnection complexity, while small modules aim to make programs easier to understand and work with.
+
+..
+
+growth, never final, build as such.
+
+..
+
+=== 2.1 Essentials
+
+..
+
+==== 2.1.1 Motivations
+
+..
+
+==== 2.1.2 Single Responsibility Principle
+
+..
+
+==== 2.1.3 API First
+
+design focus on interface
+
+==== 2.1.4 Revealing Pattern
+
+only export what's actually used and what shouldn't be private
+
+==== 2.1.5 State Management
+
+- no state or little state
+- if possible wrap inside a fn call (e.g requestHere = request.defaults({..}))
+
+=== 2.2 CRUST: Consistent, Reliable, Unambiguous, Simple and Tiny
+
+CRUST interfaces: inflexible output, somewhat flexible input
+
+=== 2.3 Growing a Module
+
+..
+
+==== 2.3.1 Composable and Scalable
+
+only implement features that scale, if they are too narrow, spend time figuring out a broader use case
+
+==== 2.3.2 Take Small Steps
+
+taking small steps, doesn't need to cater to every use case from the beginning
+
+==== 2.3.3 Design for Today
+
+wait until use cases emerge, then maybe abstract
+
+==== 2.3.4 Move Deliberately and Experiment
+
+fix FB mantra
+
+=== 2.4 CRUST Considerations
+
+..
+
+==== 2.4.x Do Repeat Yourself
+
+DRY isn't the holy grail
+
+==== 2.4.x Feature Isolation
+
+can a feature be added as an external module? why not?
+
+==== 2.4.x Flexibility vs Performance
+
+depends on use case, but consider 10k vs 10m and hot paths
+
+=== 2.5 Pruning the Module
+
+..
+
+==== 2.5.1 Error Handling
+
+handle or at least log all errors
+
+==== 2.5.2 Document the API
+
+because unambiguous, team interaction, etc
+
+==== 2.5.3 Removing Code is Hard
+
+..
+
+==== 2.5.4 Bend the Rules!
+
+..
