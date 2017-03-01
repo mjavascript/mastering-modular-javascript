@@ -18,35 +18,229 @@ Measuring complexity by lines of code would be trite: a file with thousands of l
 
 Cyclomatic complexity is the amount of unique code paths a program can take, and it may be a better metric when measuring how complex a component is. Cyclomatic complexity only allows us to measure how complex a component has become. On its own, however, tracking this metric does little to significantly reduce complexity across our codebase or improve our coding style.
 
-Modularity tackles the complexity problem in program design by opting for small modules with a clear-cut and well-tested API that's also documented. Defining a clear-cut API tackles interconnection complexity, while small modules aim to make programs easier to understand and work with.
+We must acknowledge that codebases are not fixed in time. Codebases typically grow along with time, much like the products we build with them. There is no such thing as a finished product or the perfect codebase. We should develop application architecture that embraces the passage of time through the ability to adjust to new conditions.
 
-..
+A significant body of changes to an implementation should be able to leave the API in front of said implementation unmodified. It should be possible to extend the API surface of a component with ease, and ironing out outdated API wrinkles shouldn't be fraught with confusion or frustration. When we want to horizontally scale our program beyond single components, it should be straightforward instead of having to modify several existing components in order to accomodate each new one. How can modular design help us manage complexity both at the component level and at scale?
 
-growth, never final, build as such.
+=== 2.1 Modular Design Essentials
 
-..
+Modularity tackles the complexity problem in program design by opting for small modules with a clear-cut and well-tested API that's also documented. Defining a precise API attacks interconnection complexity, while small modules aim to make programs easier to understand and work with.
 
-=== 2.1 Essentials
+==== 2.1.1 Single Responsibility Principle
 
-..
+The single responsibility principle (SRP) is perhaps the most widely agreed upon principle of successful modular application design. Components are said to follow SRP when they have a single, narrow objective.
 
-==== 2.1.1 Motivations
+Modules which follow SRP do not necessarily have to export a single function as their API. As long as the methods and properties we export from a component are related, we wouldn't be breaking SRP.
 
-..
+When thinking in terms of SRP, it's important to figure out what the responsibility is. Consider, as an example, a component used to send emails through the SMTP protocol. The fact that we chose to send emails using SMTP could be considered an implementation detail. If we later want the ability to render the HTML to be sent in those emails using a template and a model, would that also pertain to the email sending responsibility?
 
-==== 2.1.2 Single Responsibility Principle
+Imagine we developed email sending and templating in the same component. These would be tightly coupled. Furthermore, if we later wanted to switch from SMTP to the solution offered through the API for a transactional email provider, we'd have to be careful not to interfere with the templating capability that lies in the same module.
 
-..
+The following code snippet represents a tightly coupled piece of code where we mix templating, sanitization, email API client instantiation, and email sending.
 
-==== 2.1.3 API First
+[source,javascript]
+----
+import insane from 'insane'
+import mailApi from 'mail-api'
+import { mailApiSecret } from './secrets'
+function sanitize (template, ...expressions) {
+  return template.reduce((result, part, i) =>
+    result + insane(expressions[i - 1]) + part
+  )
+}
+export default function send (options, done) {
+  const {
+    to,
+    subject,
+    model: { title, body, tags }
+  } = options
+  const html = sanitize`
+    <h1>${ title }</h1>
+    <div>${ body }</div>
+    <div>
+    ${
+      tags
+        .map(tag => `${ <span>${ tag }</span> }`)
+        .join(` `)
+    }
+    </div>
+  `
+  const client = mailApi({ mailApiSecret })
+  client.send({
+    from: `hello@mjavascript.com`,
+    to,
+    subject,
+    html
+  }, done)
+}
+----
 
-design focus on interface
+It might be better to create a separate component that's in charge of rendering HTML based off of a template and a model, instead of adding templating directly in the email sending component. We could then add a dependency on the email module so that we can send that HTML, or we could create a third module where we're only concerned with the wiring.
 
-==== 2.1.4 Revealing Pattern
+Provided its consumer-facing interface remained the same, an independent SMTP email component would be interchangeable with a component that sent emails some other way such as via an API, logging to a data store, or writing to standard output. In this scenario, the way in which emails are sent would be an implementation detail, while the interface becomes more rigid as it's adopted by more modules. An inflexible interface gives us flexibility in how the task is performed, while allowing implementations to be replaced with ease according to the use case at hand.
 
-only export what's actually used and what shouldn't be private
+The following example shows an email component that's only concerned with configuring the API client and adhering to a thoughtful interface which receives the +to+ recipient, the email +subject+ and its +html+ body and then sends the email. This component has the sole purpose of sending email.
 
-==== 2.1.5 State Management
+[source,javascript]
+----
+import mailApi from 'mail-api'
+import { mailApiSecret } from './secrets'
+export default function send (options, done) {
+  const { to, subject, html } = options
+  const client = mailApi({ mailApiSecret })
+  client.send({
+    from: `hello@mjavascript.com`,
+    to,
+    subject,
+    html
+  }, done)
+}
+----
+
+It wouldn't be hard to create a drop-in replacement by developing a module which adheres to the same +send+ API but sends email in a different way. The following example uses a different mechanism, where we simply log to the console. Even though it doesn't actually send any emails, this component could be useful for debugging purposes.
+
+[source,javascript]
+----
+export default function send (options, done) {
+  const { to, subject, html } = options
+  console.log(`
+    Sending email.
+    To: ${ to }
+    Subject: ${ subject }
+    ${ html }`
+  )
+  done()
+}
+----
+
+By the same token, a templating component could be developed orthogonally, with an implementation that's not directly tied into email sending. The following example is extracted from our original, coupled implementation, but only concerned with producing a piece of sanitized HTML using a template and the user-provided model.
+
+[source,javascript]
+----
+import insane from 'insane'
+function sanitize (template, ...expressions) {
+  return template.reduce((result, part, i) =>
+    result + insane(expressions[i - 1]) + part
+  )
+}
+export default function compile (model) {
+  const { title, body, tags } = model
+  const html = sanitize`
+    <h1>${ title }</h1>
+    <div>${ body }</div>
+    <div>
+    ${
+      tags
+        .map(tag => `${ <span>${ tag }</span> }`)
+        .join(` `)
+    }
+    </div>
+  `
+  return html
+}
+----
+
+Changing the API slightly shouldn't be an issue, as long as the API remains consistent across the components we want to make interchangeable. A different implementation could take a template identifier, in addition to the +model+ object, so that the template itself is also decoupled from the +compile+ function.
+
+As we mentioned earlier, a third module could plumb together different components which handle separate concerns, such as templating and email sending. The following example leverages the logging email provider and the static templating function to join both concerns together. Interestingly, this module doesn't break SRP either, as its only concern is to plumb other modules together.
+
+[source,javascript]
+----
+import { send } from './email/log-provider'
+import { compile } from './templating/static'
+
+export default function send (options, done) {
+  const { to, subject, model } = options
+  const html = compile(model)
+  send({ to, subject, html }, done)
+}
+----
+
+==== 2.1.2 API First
+
+A module is only as good as its public interface. A poor implementation may hide behind an excellent interface. More importantly, a great interface means we can swap out a poor implementation as soon as we find time to introduce a better one. Since the API remains the same, we can decide whether to replace the existing implementation altogether or if both should co-exist while we upgrade consumers to use the newer one.
+
+A flawed API is a lot harder to repair. There may be several implementations which follow the interface we intend to modify, meaning that we'd have to change the API calls in each consumer whenever we want to make changes to the API itself. The amount of API calls that potentially have to adapt increases with time, entrenching the API as the project grows.
+
+Having a mindful design focus on public interfaces is paramount to developing maintainable component systems. Well designed interfaces can stand the test of time by introducing new implementations that conform to that same interface. A properly designed interface should make it simple to access the most basic or common use cases for the component, while being flexible enough to support other use cases as they arise.
+
+Often, an interface doesn't have the necesity of offering multiple implementations. We must think in terms of the component's API first, regardless. Abstracting the implementation is only a small part of the puzzle. The answer to API design lies in figuring out which properties and methods consumers will need, while keeping the interface as small as possible.
+
+When we need to implement a new component, a good rule of thumb is drawing up the API calls we'd need to make against that new component. For instance, we might want a component to interact with the Elasticsearch REST API. Elasticsearch is a database engine with advanced search and analytics capabilities, where documents are stored in indices and arranged by type.
+
+In the following piece of code, we're fantasizing with an +./elasticsearch+ component which has a public +createClient+ binding, which returns an object with a +client#get+ method that returns a +Promise+. Note how detailed the query is, making up what could be a real-world keyword search for blog articles tagged +modularity+ and +javascript+.
+
+[source,javascript]
+----
+import { createClient } from './elasticsearch'
+import { elasticsearchHost } from './secrets'
+
+const client = createClient({
+  host: elasticsearchHost
+})
+client
+  .get({
+    index: `blog`,
+    type: `articles`,
+    body: {
+      query: {
+        match: {
+          tags: [`modularity`, `javascript`]
+        }
+      }
+    }
+  })
+  .then(response => {
+    // ...
+  })
+----
+
+Using the +createClient+ method we could create a client, establishing a connection to an Elasticsearch server. If the connection is dropped, the component we're envisioning will seamlessly reconnect to the server, but on the consumer side we don't necessarily want to worry about that.
+
+Configuration options passed to +createClient+ might tweak how aggressively the client attempts to reconnect. A +backoff+ setting could toggle whether an exponential backoff mechanism should be used, where the client waits for increasing periods of time if it's unable to establish a connection.
+
+An +optimistic+ setting that's enabled by default could prevent queries from settling in rejection when a server connection isn't established, by having them wait until a connection is established before they can be made.
+
+Even though the only setting explicitly outlined in our imagined API usage example is +host+, it would be simple for the implementation to support new ones in its API without breaking backward compatibility.
+
+The +client#get+ method returns a promise that'll settle with the results of asking Elasticsearch about the provided +index+, +type+, and query. When the query results in an HTTP error or an Elasticsearch error, the promise is rejected. To construct the endpoint we use the +index+, +type+, and the +host+ that the +client+ was created with. For the request payload, we use the +body+ field, which follows the Elasticsearch Query DSLfootnote:[You can check out the Elasticsearch Query DSL documentation here: https://mjavascript.com/out/es-dsl.]. Adding more +client+ methods, such as +put+ and +delete+, would be trivial.
+
+Following an API-first methodology is crucial in understanding how the API might be used. By placing our foremost focus on the interface, we are purposely avoiding the implementation until there's a clear idea of what interface the component should have. Then, once we have a desired interface in mind, we can begin implementing the component. Always write code against an interface.
+
+Note how the focus is not only on what the example at hand addresses directly but also on what it doesn't address: room for improvement, corner cases, how the API might change going forward, and whether the existing API can accomodate more uses without breaking backward compatibility.
+
+==== 2.1.3 Revealing Pattern
+
+When everything in a component is made public, nothing can be considered an implementation detail and thus making changes becomes hard. Prefixing properties with an underscore is not enough for consumers not to rely on them: a better approach is not to reveal private properties in the first place.
+
+A small API surface is easier to work with than a large API surface, as there's simply less we can ask of the API.
+
+
+
+
+
+
+- TODO: only export what's actually used and what shouldn't be private
+- TODO: examples
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+==== 2.1.4 State Management
 
 - no state or little state
 - if possible wrap inside a fn call (e.g requestHere = request.defaults({..}))
