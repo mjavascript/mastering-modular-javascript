@@ -213,34 +213,79 @@ Note how the focus is not only on what the example at hand addresses directly bu
 
 When everything in a component is made public, nothing can be considered an implementation detail and thus making changes becomes hard. Prefixing properties with an underscore is not enough for consumers not to rely on them: a better approach is not to reveal private properties in the first place.
 
-A small API surface is easier to work with than a large API surface, as there's simply less we can ask of the API.
+By exposing only what's meant to be used by external consumers, a component avoids a world of trouble. Consumers don't need to worry about undocumented touchpoints meant for internal use, however tempting, because they're not exposed in the first place. Component makers don't need to be concerned about consumers using touchpoints that were meant to be internal when they want to internalize them.
+
+Consider the following piece of code, where we're externalizing the entire implementation of a simple +counter+ object. Even though it's not meant to be part of the public API, as indicated by its underscore prefix, the +_state+ property is still exposed.
+
+[source,javascript]
+----
+const counter = {
+  _state: 0,
+  increment() { counter._state++ },
+  decrement() { counter._state-- },
+  read() { return counter._state }
+}
+export default counter
+----
+
+It'd be better to explicitly expose the methods and properties we want to make public.
+
+[source,javascript]
+----
+const counter = {
+  _state: 0,
+  increment() { counter._state++ },
+  decrement() { counter._state-- },
+  read() { return counter._state }
+}
+const { increment, decrement, read } = counter
+const api = { increment, decrement, read }
+export default api
+----
+
+This is akin to how some libraries were written in the days before JavaScript had proper modules, where we would wrap everything in a closure so that it wouldn't leak globals and our implementation would stay private, and then return a public API. For reference, the next code snippet shows an equivalent component using a closure instead.
+
+[source,javascript]
+----
+(function(){
+  const counter = {
+    _state: 0,
+    increment() { counter._state++ },
+    decrement() { counter._state-- },
+    read() { return counter._state }
+  }
+  const { increment, decrement, read } = counter
+  const api = { increment, decrement, read }
+  return api
+})()
+----
+
+When exposing touchpoints on an interface, it's important to gauge if consumers will need the touchpoint at all, how it helps them, and whether it could be made simpler. For instance, it might be the case that instead of exposing several different touchpoints the user can pick from, they'd be better off with a single touchpoint that leverages the appropriate code path based on provided inputs while, at the same time, the component would couple a smaller part of its implementation to its interface.
+
+Thinking in API-first terms can help, because we'd have a decent idea of the kind of API surface that we want, and armed with that we can decide how we want to allow consumers to interact with the component.
+
+As new use cases arise and our component system grows, we should stick to an API-first mindset and the revealing pattern, so that the component doesn't suddenly become more complex. Gradually introducing complexity can help us design the right interface for our component. One where we don't offer every solution imaginable, but also one where we elegantly solve the consumer's use cases, provided they fall within the responsibility of our component.
+
+==== 2.1.4 Finding the Right Abstractions
+
+Open-source software components often get feature requests which are overly specific to the needs of that particular user. Taking feature requests or requirements at face value is not enough, instead we need to dive deeper and find commonalities between the feature that's being requested, features that we may have planned for our roadmap, and features we might want to adapt our component to support in the future.
+
+It's important for a component to satisfy the needs of most of its consumers, but this doesn't mean we should attempt to satisfy use cases one by one, or in isolation.
+
+.. At the same time, abstractions can be a costly way of merging use cases ..
 
 
 
 
 
-
-- TODO: only export what's actually used and what shouldn't be private
-- TODO: examples
-
+- more prose around the above
+- stories with rome/dragula-like cases
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-==== 2.1.4 State Management
+==== 2.1.5 State Management
 
 - no state or little state
 - if possible wrap inside a fn call (e.g requestHere = request.defaults({..}))
