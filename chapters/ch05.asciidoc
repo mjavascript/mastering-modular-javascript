@@ -1,0 +1,6 @@
+5 Modular Patterns and Practices
+5.1 Revealing Module
+5.2 Object Factory
+5.3 Composition Over Inheritance
+5.4 Events
+5.5 Conventions

@@ -1,0 +1,20 @@
+4 Shaping a Module
+# akin to ch02, but more practical examples
+4.1 The API
+4.2 Internal Design
+4.3 Loose Coupling
+4.4 Semantic Versioning and Backward Compatibility
+4.5 Documentation
+4.6 Testing
+
+---
+
+most of this chapter should be like programming best practices:
+
+branch flipping, guard clauses, etc:
+
+
+- When we have long branches followed by an `else` and a shorter branch (generally the shorter branch would log an error, `throw`, return, or otherwise perform a failure handling), it's best to exit early by flipping the `if` condition, placing the short branch first, and returning. Here, I'm referring to the `if (response.status < 300) {` query. If we turn this into `response.status >= 300`, then when reading the code we immediately learn that it wouldn't continue for status codes beyond `299`. When done systematically, this makes the code easier to follow.
+
+
+---

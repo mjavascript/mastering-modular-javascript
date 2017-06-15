@@ -1,0 +1,68 @@
+[[growing-a-module]]
+== Module Design
+
+Having established a few fundamentals of module thinking and interface design principles, it's time for us to shift our attention to module internals and implementation concerns. Thinking in terms of API-driven and documentation-driven design will yield more usable modules than not doing so. You might argue that internals are not that important: "as long as the interface holds, we can put anything we want in the mix!". A usable interface is only one side of the equation, but it will do little to keep the maintainability of your applications in check. Properly designed module internals help keep our code readable and its intent clear.
+
+=== 3.1 Growing a Module
+
+Small, single-purpose functions are the lifeblood of clean module design.
+
+
+
+==== 3.1.1 Composable and Scalable
+
+only implement features that scale, if they are too narrow, spend time figuring out a broader use case
+
+==== 3.1.2 Take Small Steps
+
+taking small steps, doesn't need to cater to every use case from the beginning
+
+==== 3.1.3 Design for Today
+
+wait until use cases emerge, then maybe abstract
+
+==== 3.1.4 Move Deliberately and Experiment
+
+fix FB mantra
+
+
+
+
+=== 3.2 CRUST Considerations
+
+..
+
+==== 3.2.x Do Repeat Yourself
+
+DRY isn't the holy grail
+
+==== 3.2.x Feature Isolation
+
+can a feature be added as an external module? why not?
+
+==== 3.2.x Flexibility vs Performance
+
+depends on use case, but consider 10k vs 10m and hot paths
+
+
+
+
+=== 3.3 Pruning the Module
+
+..
+
+==== 3.3.1 Error Handling
+
+handle or at least log all errors
+
+==== 3.3.2 Document the API
+
+because unambiguous, team interaction, etc
+
+==== 3.3.3 Removing Code is Hard
+
+..
+
+==== 3.3.4 Bending the Rules
+
+..

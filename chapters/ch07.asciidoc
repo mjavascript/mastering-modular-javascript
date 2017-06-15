@@ -1,0 +1,6 @@
+
+7 Managing Complexity Across Modules
+# chapter around ways of reducing complexity across whole module system
+7.1 ..
+# complexity of change across layers/time, drop mention of How Buildings Learn
+# managing local state (as an instance factory) vs globally (e.g mongoose.currentConnection)
