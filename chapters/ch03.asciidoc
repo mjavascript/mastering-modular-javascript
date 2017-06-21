@@ -75,33 +75,45 @@ In any case, when we're uncertain if our interface will be needing to expose cer
 
 ==== 3.1.4 Move Deliberately and Experiment
 
-fix FB mantra
+You might have heard the "Move Fast and Break Things" mantra from Facebook. It's dangerous to take this mantra literally in terms of software development, which shouldn't be hurried nor frequently broken, let alone on purpose. The mantra is meant to be interpreted as an invitation to experiment, where the things we should be breaking are assumptions about how an application architecture should be laid out, how users behave, what advertisers want, and any other assumptions. Moving fast means to quickly hash out prototypes to test our newfound assumptions, to timely seize upon new markets, to avoid engineering slowing to a crawl as teams and requirements grow in size and complexity, and to constantly iterate on our products or codebases.
 
+Taken literally, moving fast and breaking things is a dreadful way to go about software development. Any organization worth their salt would never encourage engineers to write code faster at the expense of their product quality. Code should exist mostly because it has to, in order for the products they make up to exist. The less complex the code we write, provided the product remains the same, the better.
 
+The code that makes up a product should be covered by tests, minimizing the risk of bugs making their way to production. When we take "Move Fast and Break Things" literally, we are tempted to think testing is optional, since it slows us down and we need to move fast. A product that's not test covered will be, ironically, unable to move fast when bugs inevitable arise and wind down engineering speed.
 
+A better mantra might be one that can be taken literally, such as "Move Deliberately and Experiment". This mantra carries the same sentiment as the Facebook mantra of "Move Fast and Break Things", but its true meaning isn't meant to be decoded or interpreted. Experimentation is a key aspect of software design and development. We should constantly try out and validate new ideas, verifying whether they pose better solutions than the status quo. We could interpret "Move Fast and Break Things" as "A/B testfootnote:[A/B testing is a form of user testing where we take a small portion of users and present them with a different experience than what we present to the general userbase. We then track engagement among the two groups, and if the engagement is higher for the users with the new experience, then we might go ahead and present that to our entire userbase. It is an effective way of reducing risk when we want to modify our user experience, by testing our assumptions in small experiments before we introduce changes to the majority of our users.] early and A/B test often", and "Move Deliberately and Experiment" can convey this meaning as well.
+
+To move deliberately is to move with cause. Engineering tempo will rarely be guided by the development team's desire to move faster, but is most often instead bound by release cycles and the complexity in requirements needed to meet those releases. Of course, everyone wants engineering to move fast where possible, but interface design shouldn't be hurried, regardless of whether the interface we're dealing with is an architecture, a layer, a component, or a function. Internals aren't as crucial to get right, for as long as the interface holds, the internals can be later improved for performance or readability gains. This is not to advocate sloppily developed internals, but rather to encourage respectfully and deliberately thought out interface design.
 
 === 3.2 CRUST Considerations
 
+We're getting closer to function internals, which will be discussed at length in chapter 4. Before we do so, we need to address a few more concerns on the component level. This section explores how we can keep components simple by following the CRUST principle outlined in chapter 2.
+
+==== 3.2.1 Do Repeat Yourself
+
+
 ..
 
-==== 3.2.x Do Repeat Yourself
+
 
 DRY isn't the holy grail
 
-==== 3.2.x Feature Isolation
+==== 3.2.2 Feature Isolation
 
 can a feature be added as an external module? why not?
 
-==== 3.2.x Flexibility vs Performance
+==== 3.2.3 Trade-offs when Designing Internals
+
+Flexibility, Performance, ..
 
 depends on use case, but consider 10k vs 10m and hot paths
 
 
 
 
-=== 3.3 Pruning the Module
+=== 3.3 Pruning a Module
 
-..
+Much like modern web development, module design is never truly done. In this section we'll visit a few discussion topics that'll get you thinking about the long half-life of components, and how we can design and build our components so that they don't cause trouble after we've finished actively developing them.
 
 ==== 3.3.1 Error Handling
 
@@ -113,9 +125,7 @@ because unambiguous, team interaction, etc
 
 ==== 3.3.3 Removing Code is Hard
 
-In the world of CSS, there's a popular phrase about how it's an "append-only language" implicating that, once a piece of CSS code has been added, it can't be removed because we might inadvertently break our designs due to the way the cascade works.
-
-In JavaScript, it's not quite that hard to remove code, but it is indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge.
+There's a popular phrase in the world of CSS about how it's an "append-only language" implicating that once a piece of CSS code has been added it can't any longer be removed, because doing so could inadvertently break our designs, due to the way the cascade works. In JavaScript, it's not quite that hard to remove code, but it is indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge as well.
 
 Naturally, it's easier to modify a module's internal implementation than to change its public API, as the effects of doing so would be limited to the module's internals. Internal changes that don't affect the API are typically not observable from the outside. The exception to that rule would be when consumers monkey-patchfootnote:[Monkey-patching is when we intentionally modify the public interface of a component from the outside in order to add, remove, or modify its functionality. Monkey-patching can be helpful when we want to change the behavior of a component we don't control, such as a library or dependency. Patching is error-prone because we might be affecting other consumers of this API, who are unaware of our patches. The API itself or its internals may also change, breaking the assumptions made about them in our patch. While it's generally best avoided, sometimes it's the only choice at hand.] our interface, sometimes becoming able to observe some of our internals. In this case, however, the consumer should be aware of how brittle monkey-patching a module they do not control is, and they did so assuming the risk of breakage.
 
