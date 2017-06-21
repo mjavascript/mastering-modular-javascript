@@ -1,3 +1,6 @@
+[[shaping-module-internals]]
+== Shaping Module Internals
+
 4 Shaping a Module
 # akin to ch02, but more practical examples
 4.1 The API

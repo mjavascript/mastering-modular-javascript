@@ -1,4 +1,4 @@
-[[growing-a-module]]
+[[module-design]]
 == Module Design
 
 Having established a few fundamentals of module thinking and interface design principles, it's time for us to shift our attention to module internals and implementation concerns. Thinking in terms of API-driven and documentation-driven design will yield more usable modules than not doing so. You might argue that internals are not that important: "as long as the interface holds, we can put anything we want in the mix!". A usable interface is only one side of the equation, but it will do little to keep the maintainability of your applications in check. Properly designed module internals help keep our code readable and its intent clear.
@@ -41,11 +41,28 @@ Abstractions aren't free, but they can shield portions of code from complexity. 
 
 When we're weighing whether to offer an interface like CSS selectors or callbacks, we're deciding how much we want to abstract, and how much we want to leave up to the consumer. When we choose to let the user provide CSS selectors, we keep the interface short, but the use cases will be limited as well. Consumers won't be able, for example, to decide dynamically whether the element is draggable or not beyond what a CSS selector can offer. When we choose to let the user provide callbacks, we make it harder for them to use our interface, since they now have to provide bits and pieces of the implementation themselves, but that expense buys them great flexibility in how to decide what is draggable and what is not.
 
-As most things in program design, API design is a constant tradeoff between simplicity and flexibility. For each particular case, it is our responsibility to decide how flexible we want the interface to be, but at the expense of simplicity. We can also decide how simple we want an interface to be, but at the expense of simplicity. Going back to jQuery, it's interesting to note how they always favor simplicity, by allowing you to provide as little information as needed for most of their API methods. Meanwhile, they avoid sacrificing flexibility by offering countless overloads for each of their API methods. The complexity lies in their implementation, balancing arguments by figuring out whether they're a `NodeList`, a DOM element, an array, a function, a selector, or something else, -- not to mention optional parameters -- before even starting to fulfill the consumer's goal when making an API call. Consumers observe some of the complexity at the seams, when sifting through documentation and finding out about all the different ways of accomplishing the same goals. And yet, despite all of its internal complexity, code which consumes the jQuery API manages to stay ravashingly simple.
+As most things in program design, API design is a constant tradeoff between simplicity and flexibility. For each particular case, it is our responsibility to decide how flexible we want the interface to be, but at the expense of simplicity. We can also decide how simple we want an interface to be, but at the expense of simplicity. Going back to jQuery, it's interesting to note how they always favor simplicity, by allowing you to provide as little information as needed for most of their API methods. Meanwhile, they avoid sacrificing flexibility by offering countless overloads for each of their API methods. The complexity lies in their implementation, balancing arguments by figuring out whether they're a `NodeList`, a DOM element, an array, a function, a selector, or something else, -- not to mention optional parameters -- before even starting to fulfill the consumer's goal when making an API call. Consumers observe some of the complexity at the seams, when sifting through documentation and finding out about all the different ways of accomplishing the same goals. And yet, despite all of jQuery's internal complexity, code which consumes the jQuery API manages to stay ravashingly simple.
 
-==== 3.1.2 Take Small Steps
+==== 3.1.2 Taking Small Steps
+
+Before we go off and start pondering the best ways of abstracting a feature we need to implement so that it caters to every single requirement that might come in the future, it's necessary to take a step back and consider simpler alternatives. A simple implementation means we pay smaller upfront costs, but it doesn't necessarily mean that new requirements will result in breaking changes.
+
+As we've analyzed in chapter 2, sometimes we may get away with first implementing a solution for the simplest or most common use case, and then adding an options parameter through which newer use cases can be configured. As we get to more advanced use cases, we can make decisions as outlined in the previous section, choosing which use cases deserve to be grouped under an abstraction and which are too narrow for an abstraction to be worthwhile.
+
+It's important to understand that abstractions should evolve naturally. When we're unsure about whether to bundle a few use cases with an abstraction, the best option is often to wait and see whether more use cases would fall into the abstraction we're considering. If we wait and the abstraction holds true for more and more use cases, we can go ahead and implement the abstraction. If the abstraction doesn't hold, then we can be thankful we won't have to bend the abstraction to fit the new use cases, often breaking the abstraction or causing more grief than the abstraction had originally set out to avoid on our behalf.
+
+..
+
+
 
 taking small steps, doesn't need to cater to every use case from the beginning
+
+
+
+
+
+
+
 
 ==== 3.1.3 Design for Today
 
