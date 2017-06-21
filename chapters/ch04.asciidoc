@@ -9,7 +9,7 @@
 
 ---
 
-most of this chapter should be like programming best practices:
+most of this chapter should be like javascript code programming best practices:
 
 branch flipping, guard clauses, etc:
 

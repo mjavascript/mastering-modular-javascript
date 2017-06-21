@@ -5,13 +5,43 @@ Having established a few fundamentals of module thinking and interface design pr
 
 === 3.1 Growing a Module
 
-Small, single-purpose functions are the lifeblood of clean module design.
+Small, single-purpose functions are the lifeblood of clean module design. Purpose-built functions scale well because they introduce little organizational complexity into the module they belong to, even when that module grows to 500 lines of code. Small functions are not necessarily less powerful than large functions, but their power lies in composition.
+
+Suppose that instead of implementing a single function with 100 lines of code we break it up into 3 or more smaller functions. We might later be able to reuse one of those smaller functions somewhere else in our module, or it might prove a useful addition to its public interface.
+
+In this chapter we'll discuss design considerations aimed at reducing complexity at the module level. While most of the concerns we'll discuss here have an effect on the way we write functions, it is in the next chapter where we'll be devoting our time to the art of writing less complex functions.
+
+==== 3.1.1 Composability and Scalability
+
+Cleanly composed functions are at the heart of effective module design. Functions are the fundamental unit of our code. We could get away with writing the smallest possible number of functions required, the ones that are invoked by consumers or need to be passed for other interfaces to consume, but that wouldn't get us much in the way of maintainability.
+
+We could rely solely on intuition to decide what deserves to be its own function and what is better left inlined as part of a larger body of code, but this might leave us with inconsistencies that depend upon our frame of mind, as well as how each member of a team perceives functions are to be sliced. As we'll see in the next chapter, pairing a few rules of thumb with our own intuition is an effective way of keeping functions simple, limiting their scope.
+
+At the module level, it's required that we implement features with the API surface in mind. When we plan out new functionality, we have to consider whether the abstraction is right for our consumers, how it might evolve and scale over time, and how narrowly or broadly it can support the use cases of its consumers.
+
+When considering whether the abstraction is right, suppose we have a function that's a `draggable` object factory for DOM elements. Draggable objects can be moved around and then dropped in a container, but consumers often have to impose different limitations on the conditions under which the object can be moved, some of which we'll outline in the following list.
+
+- Draggable elements must have a parent with a `draggable-list` class
+- Draggable elements mustn't have a `draggable-frozen` class
+- Dragging must initiate from a child with a `drag-handle` class
+- Elements may be dropped into containers with a `draggable-dropzone` class
+- Elements may be dropped into containers with at most 6 children
+- Elements may not be dropped into the container they're being dragged from
+- Elements must be sortable in the container they're dragged from, but they can't be dropped into other containers
+
+We've now spent quite a bit of time thinking about use cases for a drag and drop library, so we're well equipped to come up with an API that will satisfy most or maybe even every one of these use cases, without dramatically broadening our API surface.
+
+Consider, in contrast, the situation if we were to go off and implement a way of checking off each use case in isolation without taking into account similar use cases, or cases which might arise but are not an immediate need. We would end up with seven different ways of introducing specific restrictions on how elements are dragged and dropped. Since we've designed their interfaces in isolation, each of these solutions is likely to be at least slightly different from the rest. Maybe they're similar enough that each of them is an option flag, but the consumer still can't help but wonder why we have seven different flags for such similar use cases, and they can't shake the feeling that we've designed the interface poorly. Except there wasn't much in the way of design, we've mostly tacked requirement upon requirement onto our API surface as they came along, never daring to look at the road ahead and envisioning how the API might evolve in the future. If we had designed them with scalability in mind, we might've grouped many similar use cases under the same feature, and would've avoided an unnecessarily large API surface in the process.
 
 
 
-==== 3.1.1 Composable and Scalable
+
 
 only implement features that scale, if they are too narrow, spend time figuring out a broader use case
+
+
+
+
 
 ==== 3.1.2 Take Small Steps
 
@@ -60,6 +90,12 @@ handle or at least log all errors
 because unambiguous, team interaction, etc
 
 ==== 3.3.3 Removing Code is Hard
+
+In the world of CSS, there's a popular phrase about how it's an "append-only language" implicating that, once a piece of CSS code has been added, it can't be removed because we might inadvertently break our designs due to the way the cascade works.
+
+In JavaScript, it's not quite that hard to remove code, but it is indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge.
+
+Naturally, it's easier to modify a module's internal implementation than to change its public API, as the effects of doing so would be limited to the module's internals. Internal changes that don't affect the API are typically not observable from the outside. The exception to that rule would be when consumers monkey-patchfootnote:[Monkey-patching is when we intentionally modify the public interface of a component from the outside in order to add, remove, or modify its functionality. Monkey-patching can be helpful when we want to change the behavior of a component we don't control, such as a library or dependency. Patching is error-prone because we might be affecting other consumers of this API, who are unaware of our patches. The API itself or its internals may also change, breaking the assumptions made about them in our patch. While it's generally best avoided, sometimes it's the only choice at hand.] our interface, sometimes becoming able to observe some of our internals. In this case, however, the consumer should be aware of how brittle monkey-patching a module they do not control is, and they did so assuming the risk of breakage.
 
 ..
 

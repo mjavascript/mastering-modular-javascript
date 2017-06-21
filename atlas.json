@@ -4,7 +4,6 @@
   "export_formats": ["html"],
   "files": [
     "sections/cover.html",
-    "sections/toc.html",
     "chapters/ch02.asciidoc"
   ],
   "formats": {
