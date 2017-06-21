@@ -43,30 +43,30 @@ When we're weighing whether to offer an interface like CSS selectors or callback
 
 As most things in program design, API design is a constant tradeoff between simplicity and flexibility. For each particular case, it is our responsibility to decide how flexible we want the interface to be, but at the expense of simplicity. We can also decide how simple we want an interface to be, but at the expense of simplicity. Going back to jQuery, it's interesting to note how they always favor simplicity, by allowing you to provide as little information as needed for most of their API methods. Meanwhile, they avoid sacrificing flexibility by offering countless overloads for each of their API methods. The complexity lies in their implementation, balancing arguments by figuring out whether they're a `NodeList`, a DOM element, an array, a function, a selector, or something else, -- not to mention optional parameters -- before even starting to fulfill the consumer's goal when making an API call. Consumers observe some of the complexity at the seams, when sifting through documentation and finding out about all the different ways of accomplishing the same goals. And yet, despite all of jQuery's internal complexity, code which consumes the jQuery API manages to stay ravashingly simple.
 
-==== 3.1.2 Taking Small Steps
+==== 3.1.2 Design for Today
 
 Before we go off and start pondering the best ways of abstracting a feature we need to implement so that it caters to every single requirement that might come in the future, it's necessary to take a step back and consider simpler alternatives. A simple implementation means we pay smaller upfront costs, but it doesn't necessarily mean that new requirements will result in breaking changes.
 
-As we've analyzed in chapter 2, sometimes we may get away with first implementing a solution for the simplest or most common use case, and then adding an options parameter through which newer use cases can be configured. As we get to more advanced use cases, we can make decisions as outlined in the previous section, choosing which use cases deserve to be grouped under an abstraction and which are too narrow for an abstraction to be worthwhile.
+Interfaces don't need to cater to every conceivable use case from the outset. As we've analyzed in chapter 2, sometimes we may get away with first implementing a solution for the simplest or most common use case, and then adding an options parameter through which newer use cases can be configured. As we get to more advanced use cases, we can make decisions as outlined in the previous section, choosing which use cases deserve to be grouped under an abstraction and which are too narrow for an abstraction to be worthwhile.
 
-It's important to understand that abstractions should evolve naturally. When we're unsure about whether to bundle a few use cases with an abstraction, the best option is often to wait and see whether more use cases would fall into the abstraction we're considering. If we wait and the abstraction holds true for more and more use cases, we can go ahead and implement the abstraction. If the abstraction doesn't hold, then we can be thankful we won't have to bend the abstraction to fit the new use cases, often breaking the abstraction or causing more grief than the abstraction had originally set out to avoid on our behalf.
+Similarly, the interface could start off supporting only one way of receiving its inputs, and as use cases evolve we might bake polymorphism into the mix, accepting multiple input types in the same parameter position. Grandiose thinking may take us to believe that, in order to be great, our interfaces must be able to handle every input type and be highly configurable with dozens of configuration options. This might well be true for the most advanced users of our interface, but if we don't take the time to let the interface evolve and mature as needed, we might code our interface into a corner that can then only be repaired by writing a different component from a ground up with a better thought out interface, and later replacing references to the old component with the new one.
 
-..
+A larger interface is rarely better than a smaller interface which accomplishes the job consumers need it to fulfill. Elegance is of the essence here: if we wish for our interface to remain small but we predict the consumer will eventually need to hook into different pieces of our component's internal behavior so that they can react accordingly, we're better off waiting until this requirement materializes than building a solution for a problem we don't yet have.
+
+Not only will we be focusing development hours on functionality that's needed today, but we'll also avoid creating complexity that can be dispensed with for the time being. It might be argued that the ability to react to internal events of a library won't introduce a lot of complexity. Consider, however, the case where the requirement never materializes. We'd have burdened our component with increased complexity to satisfy functionality we never needed. Worse yet, consider the case where the requirement changes between the moment we've implemented a solution and when it's actually needed. We'd now have functionality we never needed, which clashes with different functionality that we do need.
+
+Suppose we don't only need hooks to react to events, but we need those hooks to be able to transform internal state -- how would the event hooks interface change then? Chances are, someone might've found a use for the event listeners we've implemented earlier, and so we cannot dispose of them with ease. We might be forced to change the event listener API to support internal state transformations, which would result in a cringeworthy interface that's bound to frustrate implementers and consumers alike.
+
+Falling in the trap of implementing features consumers don't yet need might be easy at first, but it'll cost us dearly in terms of complexity, maintainability, and wasted developer hours. The best code is no code at all. This means fewer bugs, less time spent writing code, less time writing documentation, and less time fielding support requests. Latch onto that mentality and strive to keep functionality to exactly the absolute minimum that's required.
+
+==== 3.1.3 Abstract in Small Steps
+
+It's important to note that abstractions should evolve naturally, rather than have them force an implementation style upon us. When we're unsure about whether to bundle a few use cases with an abstraction, the best option is often to wait and see whether more use cases would fall into the abstraction we're considering. If we wait and the abstraction holds true for more and more use cases, we can go ahead and implement the abstraction. If the abstraction doesn't hold, then we can be thankful we won't have to bend the abstraction to fit the new use cases, often breaking the abstraction or causing more grief than the abstraction had originally set out to avoid on our behalf.
+
+In a similar fashion to that of the last section, we should first wait until use cases emerge and then reconsider an abstraction when its benefits become clear. While developing unneeded functionality is little more than a waste of time, leveraging the wrong abstractions will kill or, at best, cripple our component's interface. While good abstractions are a powerful tool that can reduce the complexity and volume of code we write, subjecting consumers to inappropriate abstractions might increase the amount of code they need to write and will forcibly increase complexity by having users bend to the will of the abstraction, causing frustration and eventual abandonment of the poorly abstracted component.
 
 
 
-taking small steps, doesn't need to cater to every use case from the beginning
-
-
-
-
-
-
-
-
-==== 3.1.3 Design for Today
-
-wait until use cases emerge, then maybe abstract
 
 ==== 3.1.4 Move Deliberately and Experiment
 
