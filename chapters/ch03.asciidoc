@@ -89,18 +89,25 @@ To move deliberately is to move with cause. Engineering tempo will rarely be gui
 
 We're getting closer to function internals, which will be discussed at length in chapter 4. Before we do so, we need to address a few more concerns on the component level. This section explores how we can keep components simple by following the CRUST principle outlined in chapter 2.
 
-==== 3.2.1 Do Repeat Yourself
+==== 3.2.1 Do Repeat Yourself, Occasionally
 
+The DRY principle (Don't Repeat Yourself) is one of the best regarded principles in software development, and rightly so. It prompts us to write a loop when we could write a hundred print statements, it makes us create reusable functions so that we don't end up having to maintain several instances of the same piece of code, and it questions the need for slight permutations of what's virtually the same piece of code repeated over and over across our codebases.
 
-..
+When taken to the extreme, though, DRY is harmful and hinders development. Our mission to find the right abstractions will be cut short if we are ever vigilant in our quest to suppress any and all repetition. When it comes to finding abstractions, it's almost always best to pause and reflect on whether we ought to force DRY at this moment, or if we should wait a while and see whether a better pattern emerges.
 
+Being too quick to follow DRY may result in picking the wrong abstraction, costing us time if we realize the mistake early enough, and causing even more damage the longer we let an undesirable abstraction loose.
 
+In a similar fashion, blindly following DRY for even the smallest bit of code is bound to make our code harder to follow or read. Merging two sides of a regular expression that was optimized for readability (a rare sight in the world of regular expressions) will almost certainly make it harder to read and correctly infer its purpose. Is following DRY truly worthwhile in cases like this?
 
-DRY isn't the holy grail
+The whole point of DRY is to write concise code, improving readability in turn. When the more concise piece of code results in a program that's harder to read than what we had, DRY was probably a bad idea, a solution to a problem we didn't yet have, not in this particular piece of code, not yet anyway. In order to stay sane, it's necessary to take software development advice with a grain of salt, as we'll discuss in section 3.3.4.
+
+Most often, DRY is the correct approach, but there are indeed cases when DRY might not be appropriate, such as when it yields trivial gains at the expense of readability or when it hinders our ability to find better abstractions. We can always come back to our piece of code and sculpt pieces away making it more DRY. This is typically easier than trying to decouple bits of code we've mistakenly made DRY, which is why sometimes it's best to wait before we commit to DRY.
 
 ==== 3.2.2 Feature Isolation
 
-can a feature be added as an external module? why not?
+..
+
+can a feature be added as an external module? why not? service layers, lib layer, etc
 
 ==== 3.2.3 Trade-offs when Designing Internals
 
@@ -133,4 +140,6 @@ Naturally, it's easier to modify a module's internal implementation than to chan
 
 ==== 3.3.4 Bending the Rules
 
-..
+Software development advice is often written in absolute terms, rarely considering context. When you bend a rule to fit your situation, you're not necessarily disagreeing with the advice, you might just have applied a different context to the same problem. The adviser may have missed that context, or they might have avoided it as it was inconvenient.
+
+In any case, rules are meant to be bent, and broken.
