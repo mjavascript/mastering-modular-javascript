@@ -10,7 +10,7 @@ The next two definitions, offered by that same dictionary, might be more reveali
 
 The first indicates a program can become complex when its parts are arranged in a complicated manner, i.e: the interconnections among parts become a pain point. This could stem from convoluted interfaces or lacking documentation, and it's one of the aspects of complexity that we'll tackle in this book.
 
-We can interpret the second definition as the other side of the complexity coin. Components so complicated that their implementation is hard to understand, debug, or extend. Most of the book is devoted to counterbalance and avoid this aspect of complexity.
+We can interpret the second definition as the other side of the complexity coin. Components so complicated that their implementation is hard to understand, debug, or extend. Most of the book is devoted to counterbalancing and avoiding this aspect of complexity.
 
 In broad terms, something is complex when it becomes hard to grasp or fully understand. By that definition, anything in a typical program can be complex: a block of code, a single statement, the API layer, its documentation, tests, the directory structure, coding conventions, or even a variable's name.
 

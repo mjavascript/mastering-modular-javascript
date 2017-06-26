@@ -125,20 +125,23 @@ Were we to truly embrace a modular architecture, we might go an extra mile after
 
 This approach can be taken as far as we consider necessary: as long as we'd benefit from making a piece of functionality reusable across our projects, we can make it reusable, adding tests and documentation along the way. Note that hypermodularity offers diminishing returns, the more we take modularity to the extreme, the more time we'll have to spend on documentation and testing. If we intend to release each line of code we develop as its own well-documented and well-tested package, we'll be spending quite some time on tasks that are not directly related to developing features or fixing bugs. As always, use your own judgement to decide how far to take modular structures.
 
-Consider the following blanket rules to be followed only at your own discretion. There very well may be exceptions where these rules should be broken. We won't delve into anything specific, which is why we'll settle for "simple lines of code" as our code unit. In practice, it's up to you to decide what a "simple line of code" is. Perhaps, 10 simple lines of code are equivalent to a single line of code containing a complex regular expression or formula.
+When a piece of code is not very complex and rather small, it's usually not worth creating a module for. It might be better kept in a function on the module where it's consumed, or inlined every time. Such short pieces of code tend to change and branch out, often necessitating slightly different implementations in different portions of our codebase. Given the amount of code is so small, it's hardly worth our time to figure out a way to generalize the snippet of code for all or even most use cases. Chances are we'd end up with something more complex than if we just inlined the functionality to begin with.
 
-When something takes up to 3 simple lines of code, is usually not worth creating a module for, and it might be best kept in a function on the module where it's consumed, or inlined every time. Such short pieces of code tend to change, often necessitating slightly different implementations in different pieces of our codebase. Given the amount of code is so small, it's hardly worth our time to figure out a way to generalize the snippet of code for all use cases, and we might even end up with something more complex than if we just inlined the functionality to begin with.
-
-When it involves 7 simple lines of code or less, it's probably not worth creating a package for it, especially considering the amount of time you'll have to spend on extricating the module and on documentation.
+When a piece of code involves enough complexity to warrant its own module, that doesn't immediately make it worthwhile to create a package for it. External modules often involve a little bit more of maintenance work, in exchange for being reusable across codebases and offering a cleanlier interface that's properly documented. Take into consideration the amount of time you'll have to spend on extricating the module and on writing documentation, and whether that's worth the effort. Extricating the module will be challenging if it has dependencies on other parts of the codebase it belongs to, since those would have to be extricated as well. Writing documentation is typically not something we do for every module of a codebase, but we have to document modules when they're their own package, since we can't expect other potential consumers to effectively decide whether they'll be using a package without having read exactly what it does or how to use it.
 
 ==== 3.2.3 Trade-offs when Designing Internals
 
-Flexibility, Performance, ..
+When we're designing the internals of a module, it's key to keep our priorities in order: the goal is to do what consumers of this module need. That goal has several aspects to it, so let's visit them in order of importance.
 
-depends on use case, but consider 10k vs 10m and hot paths
+First off, we need to design the right interface. A complicated interface will frustrate and drive off consumers, making our module irrelevant or, at best, a pain to work with. Having an elegant or fast implementation will be of little help if our reluctant consumers have trouble leveraging the interface in front of them. A programming interface is so much more than beautiful packaging making up for a mediocre present. For consumers, the interface should be all there is. Having a simple, concise, and intuitive interface will, in turn, drive down complexity in code written by consumers. Thus, the number one aspect to our goal is to find the best possible interface that caters to the needs and wants of its consumers.
 
+Second, we need to develop something that works precisely as advertised and documented. An elegant and fast implementation that doesn't do what it's supposed to is no good to our consumers. Promising the right interface is great, but it needs to be backed up by an implementation that can deliver on the promises we make through the interface. Only then can consumers trust the code we write.
 
+Third, the implementation should be as simple as possible. The simpler our code is, the easier it will be for us to introduce changes to it without having to rewrite the existing implementation. Note that simple doesn't necessarily mean terse. For example, a simple implementation might indulge in long but descriptive variable names and a few comments explaining why code is written the way it is. Besides the ability to introduce changes, simple code is easier to follow when debugging errors, when new developers interact with the piece of software, or when the original implementors need to interact with it after a long period of time without having to worry about it. implementation simplicity comes in third, but only after a proper interface that works as expected.
 
+Fourth, the internals should be as performant as possible. Granted, some measure of performance is  codified in producing something that works well, as something that's too slow to be considered reliable would be unacceptable to consumers. Beyond that, performance falls to the fourth place in our list of desirable traits. Performance is a feature, to be treated as such, and we should favor simplicity and readability over speed. There are exceptions where performance is of the utmost importance, even at the cost of producing suboptimal interfaces and code that's not all that easy to read, but in these cases we should at least strive to heavily comment the relevant pieces of code so that it's abundantly clear why the code had to be written the way it was.
+
+Flexibility, other than that afforded by writing simple code and providing an appropriate interface, has no place in satisfying the needs of our consumers. Trying to anticipate needs is more often than not going to result in more complexity, code, and time spent, with hardly anything to show for in terms of improving the consumer's experience.
 
 === 3.3 Pruning a Module
 
@@ -146,11 +149,14 @@ Much like modern web development, module design is never truly done. In this sec
 
 ==== 3.3.1 Error Handling
 
-handle or at least log all errors
+.. handle or at least log all errors
+
+
+
 
 ==== 3.3.2 Document the API
 
-because unambiguous, team interaction, etc
+.. because unambiguous, team interaction, etc
 
 ==== 3.3.3 Removing Code is Hard
 
