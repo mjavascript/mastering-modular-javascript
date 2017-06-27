@@ -1,5 +1,5 @@
-[[shaping-module-internals]]
-== Shaping Module Internals
+[[shaping-internals]]
+== Shaping Internals
 
 4 Shaping a Module
 # akin to ch02, but more practical examples
@@ -13,6 +13,7 @@
 ---
 
 most of this chapter should be like javascript code programming best practices:
+look up code and figure out things you did. compare to code other people wrote and identify problems, explain.
 
 branch flipping, guard clauses, etc:
 

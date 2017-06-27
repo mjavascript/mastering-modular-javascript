@@ -145,20 +145,39 @@ Flexibility, other than that afforded by writing simple code and providing an ap
 
 === 3.3 Pruning a Module
 
-Much like modern web development, module design is never truly done. In this section we'll visit a few discussion topics that'll get you thinking about the long half-life of components, and how we can design and build our components so that they don't cause trouble after we've finished actively developing them.
+Much like modern web development, module design is never truly done. In this section we'll visit a few discussion topics that'll get you thinking about the long half-life of components, and how we can design and build our components so that they don't cause us much trouble after we've finished actively developing them.
 
-==== 3.3.1 Error Handling
+==== 3.3.1 Error Handling, Mitigation, Detection, and Solving
 
-.. handle or at least log all errors
+While working on software development we'll invariably need to spend time analyzing the root cause that led to subtle bugs which seem impossible to hunt down. Only after spending invaluable time we will figure out it was caused by a small difference in program state than what we had taken for granted, and that small difference snowballed through our application's logic flow into the serious issue we just had to hunt down.
+
+We can't prevent this from happening over and over -- not entirely. Unexpected bugs will always find their way to the surface. Maybe we don't control a piece of software which interacts with our own code in an unexpected way, which works well until it doesn't anymore because of a problem in the data. Maybe the problem is merely that a validation function isn't working the way it's supposed to, allowing some data to flow through the system in a shape that it shouldn't, but by the time it causes an error we'll spend quite some time until we figure out that indeed, the culprit is a bug in our validation function, triggered by a malformed kind of input that was undertested. Since the bug is completely unrelated to the error's stack track information, we might spend a few hours hunting down and identifying the issue.
+
+What we can do is mitigate the risk of bugs by writing more predictable code or improving test coverage. We can also become more proficient at debugging.
+
+On the predictable code arena, we must be sure to handle every expected error. When it comes to error handling we typically will bubble the error up the stack and handle it at the top, by logging it to an analytics tracker, to standard output, or to a database. When using a function call we know might throw, like `JSON.parse` on user input, we should wrap it with `try`/`catch` and handle the error. If we're dealing with conventional callbacks that have an error argument, let's handle the error in a guard clause. Whenever we have a promise chain, make sure to add a `.catch` reaction to the end of the chain that handles any errors ocurring in the chain. In the case of `async` functions, we could use `try`/`catch` or, alternatively, we can also add a `.catch` reaction to the result of invoking the async function. While leveraging streams or other conventional event-based interfaces, make sure to bind an `error` event handler. Proper error handling should all but eliminate the chance of expected errors crippling our software. Simple code is predictable. Thus, following the suggestions in chapter 4 will aid us in reducing the odds of encountering unexpected errors as well.
+
+Test coverage can help detect unexpected errors. If we have simple and predictable code, it's harder for unexpected errors to seep through the seams. Tests can further abridge the gap by enlarging the corpus of expected errors. When we add tests, preventable errors are codified by test cases and fixtures. When tests are comprehensive enough, we might run into unexpected errors in testing and fix them. Since we've already codified them in a test case, these errors can't happen again (a test regression) without our test suite failing.
+
+Regardless of how determined we are to develop simple, predictable, and throughly tested programs, we're still bound to run into bugs we hadn't expected. Tests exist mostly to prevent regressions, preventing us from running once again into bugs we've already fixed; and to prevent expected mistakes, errors we think might arise if we were to tweak our code in incorrect ways. Tests can do little to prognosticate and prevent software bugs from happening, however.
+
+This brings us to the inevitability of debugging. Using step-through debugging and inspecting application state as we step through the code leading to a bug is an useful tool, but it will not help us debug our code any faster than we can diagnose exactly what is going on.
+
+In order to become truly effective debuggers, we must understand how the software we depend on works internally. If we don't understand the internals of something, we're effectively dealing with a black box where anything can happen from our perspective. This adventure is left as an exercise to the reader, who is better equipped to determine how to obtain a higher understanding of how their dependencies truly work. It might be the case that reading the documentation will suffice, but note that this is rarely the case. Perhaps you should opt to download the source code from GitHub and give it a read. Maybe you're more of a hands-on kind of person and prefer to try your hand at making your own knock-off of a library you depend on, in order to understand how it works. Regardless of the path you take, the next time you run into an expected error related to a dependency you're more intimately familiar with, you'll have less of a hard time identifying the root cause, since you'll be aware of the limitations and common pitfalls of what was previously mostly a black box to you. Documentation can only take us so far in understanding how something works behind the hood, which is what's required when tracking down unexpected errors.
+
+==== 3.3.2 Documenting the API
 
 
-
-
-==== 3.3.2 Document the API
 
 .. because unambiguous, team interaction, etc
 
-==== 3.3.3 Removing Code is Hard
+
+
+
+
+
+
+==== 3.3.3 Removing Code
 
 There's a popular phrase in the world of CSS about how it's an "append-only language" implicating that once a piece of CSS code has been added it can't any longer be removed, because doing so could inadvertently break our designs, due to the way the cascade works. In JavaScript, it's not quite that hard to remove code, but it is indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge as well.
 
