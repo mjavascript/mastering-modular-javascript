@@ -185,14 +185,24 @@ Tom Preston-Werner wrote about the notion of README-driven development as a way 
 
 ==== 3.3.3 Removing Code
 
-There's a popular phrase in the world of CSS about how it's an "append-only language" implicating that once a piece of CSS code has been added it can't any longer be removed, because doing so could inadvertently break our designs, due to the way the cascade works. In JavaScript, it's not quite that hard to remove code, but it is indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge as well.
+There's a popular phrase in the world of CSS about how it's an "append-only language" implicating that once a piece of CSS code has been added it can't be removed any longer, because doing so could inadvertently break our designs, due to the way the cascade works. JavaScript doesn't make it quite that hard to remove code, but it's indeed a highly dynamic language, and removing code with the certainty that nothing will break remains a bit of a challenge as well.
 
 Naturally, it's easier to modify a module's internal implementation than to change its public API, as the effects of doing so would be limited to the module's internals. Internal changes that don't affect the API are typically not observable from the outside. The exception to that rule would be when consumers monkey-patchfootnote:[Monkey-patching is when we intentionally modify the public interface of a component from the outside in order to add, remove, or modify its functionality. Monkey-patching can be helpful when we want to change the behavior of a component we don't control, such as a library or dependency. Patching is error-prone because we might be affecting other consumers of this API, who are unaware of our patches. The API itself or its internals may also change, breaking the assumptions made about them in our patch. While it's generally best avoided, sometimes it's the only choice at hand.] our interface, sometimes becoming able to observe some of our internals. In this case, however, the consumer should be aware of how brittle monkey-patching a module they do not control is, and they did so assuming the risk of breakage.
 
-..
+In section 3.1.2 we observed that the best code is no code at all, and this has implications when it comes to removing code as well. Code we never write is code we don't need to worry about deleting. The less code there is, the less code we need to maintain, the less potential bugs we are yet to uncover, and the less code we need to read, test, and deliver over mobile networks to speed-hungry humans.
 
-==== 3.3.4 Bending the Rules
+As portions of our programs become stale and unused, it is best to remove them entirely instead of postponing their inevitable fate. Any code we desire to keep around for reference or the possibility of reinstating it in the future can be safely preserved by source control software without the necessity of keeping it around in our codebase. Avoiding commented out code and removing unused code as soon as possible will keep our codebase cleaner and easy to follow. When there's dead code, a developer might be uncertain as to whether this is actually somehow being in use somewhere else, and reluctant to remove it. As time passes, the theory of broken windows comes into full effect and we'll soon have a codebase that's riddled with unused code nobody knows why it's there or how it is that the codebase has come to be so unmanageable.
+
+Reusability plays a role in code removal, as more components depend on a module, it becomes more unlikely we'll be able to trivially remove the heavily depended-on piece of code. When a module has no connections to other modules, it can be removed from the codebase, but might still serve a purpose as its own standalone package.
+
+==== 3.3.4 Applying Context
 
 Software development advice is often written in absolute terms, rarely considering context. When you bend a rule to fit your situation, you're not necessarily disagreeing with the advice, you might just have applied a different context to the same problem. The adviser may have missed that context, or they might have avoided it as it was inconvenient.
+
+However convincing an eloquent piece of advice or tool might seem, always apply your own critical thinking and context first. What might work for large companies at incredible scale, under great load, and with their own unique set of problems, might not be suitable for your personal blogging project. What might seem like a sensible idea for a weekend hack, might not be the best use of a mid-size startup's time.
+
+Whenever you're analyzing whether a dependency, tool, or piece of advice fits your needs, always start by reading what there is to be read and consider whether the problem being solved is one you indeed need to solve. Avoid falling in the trap of leveraging advice or tools merely because it became popular or is being hailed by a large actor.
+
+Never overcommit to that which you're not certain fits your needs, but always experiment. It is by keeping an open mind that we can capture new knowledge, improve our understanding of the world, and innovate. This is aided by critical thinking and hindered by rushing to the newest technology without firsthand experimentation.
 
 In any case, rules are meant to be bent, and broken.
