@@ -1,4 +1,5 @@
 5 Modular Patterns and Practices
+# discuss role of latest language features, spread, how they can make code more maintainable, async/await, promises, etc
 5.1 Revealing Module
 5.2 Object Factory
 5.3 Composition Over Inheritance

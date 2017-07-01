@@ -1,24 +1,113 @@
 [[shaping-internals]]
 == Shaping Internals
 
-4 Shaping a Module
-# akin to ch02, but more practical examples
-4.1 The API
-4.2 Internal Design
-4.3 Loose Coupling
-4.4 Semantic Versioning and Backward Compatibility
-4.5 Documentation
-4.6 Testing
+..
+
+=== 4.1 Internal Complexity
+
+..
+
+==== 4.1.1 Measuring Internal Complexity
+
+..
+
+==== 4.1.2 Feature Entanglement
+
+..
+
+==== 4.1.3 Conventions: the Good the Bad and the Ugly
+
+Conventions are useful because they allow for better self-direction amongst developers, without causing lagoons of inconsistency to spread across our codebase as fate would have it were we to allow a team of developers too much freedom without sound design direction and conventions that dictatehow different portions of an application should be shaped. A large number of conventions might hinder productivity, especially if some of our conventions appeared to work as if by magic.
+
+..
+
+==== 4.1.4 Tight Coupling
+
+.. what it is and how tight coupling can make applications hard to scale. tight coupling of _what_?
+
+=== 4.2 Refactoring Complex Code
+
+..
+
+==== 4.2.1 Using Variables
+
+.. use intermediary variables to improve readability, shy away from ternaries, const->let->var, etc.
+
+==== 4.2.2 Guard Clauses and Branch Flipping
+
+..
+
+> When we have long branches followed by an `else` and a shorter branch (generally the shorter branch would log an error, `throw`, return, or otherwise perform a failure handling), it's best to exit early by flipping the `if` condition, placing the short branch first, and returning. Here, I'm referring to the `if (response.status < 300) {` query. If we turn this into `response.status >= 300`, then when reading the code we immediately learn that it wouldn't continue for status codes beyond `299`. When done systematically, this makes the code easier to follow.
+
+==== 4.2.3 Extracting Functions
+
+e.g let with no assignment to const, moving mappers to bottom, anything that gets in the way of *current* flow we defer for later.
+
+==== 4.2.4 Flattening Nested Callbacks
+
+.. tips/tricks to deal w async flows
+
+==== 4.2.5 Factoring Similar Tasks
+
+.. (such as when we do `createTaskFor(articles)` and `createTaskFor(weeklies)`), or maybe passing a few things but preserving internal task flow overall
+
+==== 4.2.6 Disentangling Headphone Wires
+
+.. a bit of a rehash of 4.2.2 where we visit how we can decouple unrelated functionality by creating focused functions under a shared scope.
+
+==== 4.2.7 Slicing Large Functions
+
+When all else fails, consider breaking what would otherwise inevitably be a large function into smaller functions.
+
+.. how these can be organized by splitting the functionality by steps, aspects, or any other logical grouping we can come up with
+
+
+=== 4.3 State as Entropy
+
+..
+
+==== 4.3.1 It's Complicated
+
+section on how state is terrible and the more state there is the less predictable our code becomes.
+
+==== 4.3.2 Eliminating Incidental State
+
+.. where possible always recompute state from data rather than rely on state
+
+==== 4.3.3 Containing State
+
+.. when we must have state, keep it as constrained as possible
+
+==== 4.3.4 Leveraging Immutability
+
+..
+
+=== 4.4 Data Structures are King
+
+.. a section on how data structures make or break an application, and why data-driven is better than state or logic driven
+
+==== 4.4.1 Isolating Data
+
+.. Keeping data separate from methods that modify or access said data can help reduce complexity. When data is not cluttered with functionality, it becomes easier to read, understand, and serialize.
+
+==== 4.4.2 Restricting Domain Logic
+
+.. We should strive to keep code that knows about a particular data structure or set of structures contained in as few modules as possible. Should the data structures or the logic around them require changes, the ripple effects of those changes can be devastating if domain logic is spread across the codebase.
+
+==== 4.4.3 Choosing Data Over Code
+
+.. How the right data structures can make our code much easier to write and read. It might be worth mapping data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
+
+==== 4.4.4 Reducing, Mapping, Filtering, and Sorting Data
+
+..
+
+
+
 
 ---
 
-most of this chapter should be like javascript code programming best practices:
+most of this chapter should be javascript code programming best practices:
 look up code and figure out things you did. compare to code other people wrote and identify problems, explain.
-
-branch flipping, guard clauses, etc:
-
-
-- When we have long branches followed by an `else` and a shorter branch (generally the shorter branch would log an error, `throw`, return, or otherwise perform a failure handling), it's best to exit early by flipping the `if` condition, placing the short branch first, and returning. Here, I'm referring to the `if (response.status < 300) {` query. If we turn this into `response.status >= 300`, then when reading the code we immediately learn that it wouldn't continue for status codes beyond `299`. When done systematically, this makes the code easier to follow.
-
 
 ---
