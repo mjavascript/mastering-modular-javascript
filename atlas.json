@@ -2,8 +2,10 @@
   "branch": "master",
   "files": [
     "sections/cover.html",
+    "chapters/ch01.asciidoc",
     "chapters/ch02.asciidoc",
-    "chapters/ch03.asciidoc"
+    "chapters/ch03.asciidoc",
+    "chapters/ch04.asciidoc"
   ],
   "formats": {
     "pdf": {
