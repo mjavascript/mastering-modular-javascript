@@ -34,24 +34,37 @@ As we move logic into their own functions and flatten the callback chain, we'll 
 
 ==== 4.1.2 Feature Entanglement and Tight Coupling
 
-As a module becomes larger, it becomes easier to mistakenly collapse distinct features together by interleaving their code in such a way that it becomes hard to reuse each feature independently, debug and maintain them, or otherwise extricate the features from one another.
+As a module becomes larger, it also gets easier to mistakenly collapse distinct features together by interleaving their code in such a way that it is hard to reuse each feature independently, debug and maintain them, or otherwise extricate the features from one another.
 
-As an example, if we have a feature for notifying subscribers and a feature to send notifications, we could strive to keep the features apart by clearly defining how notifications can be constructed and handed off to a different service which then sends those notifications. That way, subscriber notifications can be sent through the notification service, but given the clear separation we won't be prevent subscriber-specific notions from getting in the way of sending other kinds of notifications to our customers.
+For example, if we have a feature for notifying subscribers and a feature to send notifications, we could strive to keep the features apart by clearly defining how notifications can be constructed and handed off to a different service which then sends those notifications. That way, subscriber notifications can be sent through the notification service, but given the clear separation we won't be letting subscriber-specific notions to get in the way of sending other kinds of notifications to our customers.
 
-..
+One way of reducing the risk of entanglement would be to design features upfront, being particularly on the lookout about concerns that could be componentized or otherwise clearly delineated. By doing a little work before sitting down to write code, we might avert the risks of tight coupling.
 
+Being alert when reading old code can also be key in identifying what was previously a well-contained module that evolved to cover a broad range of concerns. We can then, over time, break apart these concerns into individual modules or better-isolated functions so that each concern is easier to maintain and understand separately.
 
+Instead of trying to build a large feature all at once, it could come in handy to build it from the inside out, keeping each stage of the process in functions that live at the same level instead of being deeply nested. Doing this methodically will lead to better decoupling, as we'll move away from monolithic structures and towards a more modular approach, where functions have smaller scopes and take what they need in the form of parameters.
 
+When we'd have to repeat ourselves by passing a lot of scope variables as function parameters just to avoid nested functions, a light degree of nesting is desirable to avoid this repetition. In key functional boundaries where our concerns go from "gather model details" to "render HTML page" to "print HTML page to PDF", nesting will invariably lead to coupling and less reusability, which is why repeating ourselves a little bit may be warranted in these cases.
 
-==== 4.1.3 Conventions: the Good the Bad and the Ugly
+==== 4.1.3 Frameworks: the Good the Bad and the Ugly
 
 Conventions are useful because they allow for better self-direction amongst developers, without causing lagoons of inconsistency to spread across our codebase as fate would have it were we to allow a team of developers too much freedom without sound design direction and conventions that dictatehow different portions of an application should be shaped. A large number of conventions might hinder productivity, especially if some of our conventions appeared to work as if by magic.
 
-..
+When it comes to conventions, frameworks are a special case. Frameworks are packed to the brim with conventions and best practices. Some of them live in the library and tooling ecosystem around the framework, while many live in the shape our code takes when we rely on said framework. Upon adopting a framework, we're buying into its conventions and practices. Most modern JavaScript frameworks offer ways of breaking our application into small chunks, regardless of whether the framework is for the client or server.
+
+Express has middleware and routes, Angular has directives, services, and controllers, React has components, and so on and so forth. These conventions and abstractions are tremendously helpful to keep complexity in check while building an application. As our components grow larger, regardless of the abstraction or framework of choice, things will get more complicated. At this moment we usually can refactor our code into smaller components that are then wrapped with larger ones, preserving separation of concerns and keeping complexity on a short leash.
+
+Eventually, we'll come into requirements that don't exactly fit the mold proposed by our framework of choice. Generally, this means the required functionality belongs on a separate layer. For example, Express in Node.js is a framework concerned with handling HTTP requests and serving responses. If one of our API endpoints needs to result in an email being sent, we could embed email-sending logic in the controller for that API endpoint. However, if an API endpoint controller is already concerned with, say, publishing blog posts, then it would be hardly right to embed email-sending logic on that same controller, since it's a different concern entirely. Instead, what we could do is create a `subscribers` service component, with functionality such as `subscribe` which adds a subscriber after verifying their email, and `notify` which takes care of sending the emails. Taking this idea further still, perhaps most of the work in `subscribers.notify` should occur via yet another service component called `emails`, which takes care of properly configuring our email sending capability, and also has functionality to turn would-be emails into plain `console.log` statements for quick access to the contents of the emails during debug sessions.
+
+Having clearly defined layers is paramount to the design of effective and maintainable applications once we're past the prototyping stages. Layers can be made up of components which follow the conventions proposed by the frameworks we use, or they can be self-imposed like the service layer we discussed in the previous paragraph. Using layers, and as long as we favor function parameters over scope for context-passing, we can introduce horizonal scaling by placing several orthogonal components alongside each other, without letting them run into each other's concerns.
 
 === 4.2 Refactoring Complex Code
 
 ..
+
+
+
+
 
 ==== 4.2.1 Using Variables
 
