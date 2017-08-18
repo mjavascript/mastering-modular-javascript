@@ -125,13 +125,87 @@ When used deliberately and extensively, early returns -- sometimes referred to a
 
 ==== 4.2.2 Guard Clauses and Branch Flipping
 
+When we have a long branch inside a conditional statement, chances are we're doing something wrong. Pieces of code like the following are commonplace in real world applications, with a long success case branch taking up significant amounts of code while having several `else` branches sprinkled near the end that would log an error, `throw`, return, or otherwise perform a failure handling action.
 
+[source,javascript]
+----
+if (response) {
+  if (!response.errors) {
+    // ... use `response`
+  } else {
+    return false
+  }
+} else {
+  return false
+}
+----
 
-> When we have long branches followed by an `else` and a shorter branch (generally the shorter branch would log an error, `throw`, return, or otherwise perform a failure handling), it's best to exit early by flipping the `if` condition, placing the short branch first, and returning. Here, I'm referring to the `if (response.status < 300) {` query. If we turn this into `response.status >= 300`, then when reading the code we immediately learn that it wouldn't continue for status codes beyond `299`. When done systematically, this makes the code easier to follow.
+In the example, we're optimizing readability for the success case, while the failure handling is relegated to the very end of our piece of code. There's several problems with this approach. For one, we have to indulge in unnecessary nesting of every success condition, or otherwise put them all in a huge conditional statement. While it's rather easy to understand the success case, things can get tricky when we're trying to debug programs like this, as we need to keep the conditionals in our head the whole time we're reading the program.
+
+A better alternative is to flip the conditionals, placing all failure handling statements near the top. While counterintuitive at first, this approach has several benefits. It reduces nesting and eliminates `else` branches while promoting failure handling to the top of our code, and this has the added benefit that we'll become more aware of error handling and naturally gravitate towards thinking about the failure cases first, a great trait to have when doing application development, where forgetting to handle a failure case might result in an incosistent experience for end users with a hard-to-trace error on top.
+
+[source,javascript]
+----
+if (!response) {
+  return false
+}
+if (response.errors) {
+  return false
+}
+// ... use `response`
+----
+
+This early exit approach is often referred to as _guard clauses_, and one of their biggest benefits is that we can learn all the failure cases upon reading the first few lines of a function or piece of code. We're not limited to `return` statements: we could `throw` errors in a promise-based context or in an async function, and in callback chaining contexts we might opt for a `done(error)` callback followed by a `return` statement.
+
+Another benefit of guard clauses is almost implicit: given that they're placed near the top of a function, we have quick access to its parameters, we can better understand how the function validates its inputs, and we can more effectively decide we need to add new guard clauses to improve validation rules.
+
+Guard clauses don't tell the reader everything they need to know that might go wrong when calling a function, but they give them a peek into expected immediate failure cases. Other things that might go wrong lie in the implementation details of the function. Perhaps we use a different service or library to fulfill the bulk of our function's task, and that service or library comes with its own set of nested guard clauses and potential failure cases that will bubble up all the way to our own function's outcome.
 
 ==== 4.2.3 An Interdependency Piramid
 
-writing functions in the order that they're meant to be read, so that it's easy to read for humans to read than the other way around
+Writing straightforward code is not all that different from writing other straightforward texts. Texts are often arranged in paragraphs, which are somewhat comparable with functions: we can consider their input to be the reader's knowledge and everything else they've read so far in the text, and the output can be what the reader gets out of the paragraph.
+
+Within a book chapter or any other piece of long-form text, paragraphs are organized in a sequential manner, allowing the reader time to digest each paragraph before they jump onto the next. The logical sequence is very much intentional: without a coherent sequencing, it would be nearly impossible to make sense of a text. Thus, writers optimize for making sure concepts are introduced before they're discussed, providing context to the reader.
+
+Function expressions such as the one in the next snippet won't be assigned to the variable binding until the line containing the assignment is evaluated. Until then, the variable binding exists in the scope, thanks to hoisting, but it is `undefined` until the assignment statement is evaluated.
+
+[source,javascript]
+----
+double(6) // TypeError: double is not a function
+var double = function(x) {
+  return x * 2
+}
+----
+
+Furthermore, if we're dealing with a `let` or `const` binding, then TDZ semantics will produce an error if we reference the binding at all before the variable declaration statement is reached.
+
+[source,javascript]
+----
+double(6) // TypeError: double is not defined
+const double = function(x) {
+  return x * 2
+}
+----
+
+Function declarations like the one in the following snippet, in contrast, are hoisted to the top of the scope. This means we can reference them anywhere in our code.
+
+[source,javascript]
+----
+double(6) // 12
+function double(x) {
+  return x * 2
+}
+----
+
+Now, we mentioned texts are written sequentially, and how the writers avoids surprises by presenting concepts before discussing them. Establishing a context in a program is a different endeavor, however. If we have a module that has the goal of rendering a chart with user engagement statistics, the top of the function should address things the reader already knows, namely the high level flow for what the rendering function is meant to do: analyze the data, construct some data views and model that data into something we can feed into a visualization library that then renders the desired chart.
+
+What we have to avoid is jumping directly into unimportant functions such as a data point label formatter, or the specifics of the data modelling. By keeping only the high level flow near the top, and the specifics towards the end, complex functionality can be designed in such a way that the reader experiences a zoomed out overview of the functionality at first, and as they read the code they uncover the details of how this chart was implemented.
+
+In a concrete sense, this means we should present functions in a codebase in the order that they'll be read by the consumer (a first-in first-out queue), and not in the execution order (a last-in first-out stack). While computers do as they're told and dig ever deeper into the flow, executing the most deeply nested routines before jumping out of a series of subroutines and executing the next line, this is an unfruitful way for humans to read a codebase, given we're ill-suited to keeping all that state in our heads.
+
+Perhaps a more specific analogy for this kind of spiraling approach can be found in newspaper articles, where the author typically offers a title that describes an event at the highest possible level, and then follows up with a lead paragraph that summarizes what happened, again at a high level. The body of the article starts also at a high level, carefully avoiding to spook the reader with too many details. It is only midway through the article that we'll start finding details about the event which, aided by the context set forth in the beginning of the article, can give us a complete picture of what transpired.
+
+Given the stack-based nature of programming, it's not that easy to naturally approach programs as if they were newspaper articles. We can, however, defer execution of implementation details to other functions or subroutines, and thanks to hoisting, we can place those subroutines after their higher level counterparts. In doing so, we're organizing our programs in a way that invites readers in, shows them a few high level hints, and then gradually unveils the spooky details of how a feature is implemented.
 
 ==== 4.2.3 Extracting Functions
 
