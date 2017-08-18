@@ -56,23 +56,76 @@ Express has middleware and routes, Angular has directives, services, and control
 
 Eventually, we'll come into requirements that don't exactly fit the mold proposed by our framework of choice. Generally, this means the required functionality belongs on a separate layer. For example, Express in Node.js is a framework concerned with handling HTTP requests and serving responses. If one of our API endpoints needs to result in an email being sent, we could embed email-sending logic in the controller for that API endpoint. However, if an API endpoint controller is already concerned with, say, publishing blog posts, then it would be hardly right to embed email-sending logic on that same controller, since it's a different concern entirely. Instead, what we could do is create a `subscribers` service component, with functionality such as `subscribe` which adds a subscriber after verifying their email, and `notify` which takes care of sending the emails. Taking this idea further still, perhaps most of the work in `subscribers.notify` should occur via yet another service component called `emails`, which takes care of properly configuring our email sending capability, and also has functionality to turn would-be emails into plain `console.log` statements for quick access to the contents of the emails during debug sessions.
 
-Having clearly defined layers is paramount to the design of effective and maintainable applications once we're past the prototyping stages. Layers can be made up of components which follow the conventions proposed by the frameworks we use, or they can be self-imposed like the service layer we discussed in the previous paragraph. Using layers, and as long as we favor function parameters over scope for context-passing, we can introduce horizonal scaling by placing several orthogonal components alongside each other, without letting them run into each other's concerns.
+Having clearly defined layers is paramount to the design of effective and maintainable applications once we're past the prototyping stages. Layers can be made up of components which follow the conventions proposed by the frameworks we use, or they can be self-imposed like the service layer we discussed in the previous paragraph. Using layers, and as long as we favor function parameters over scope for context-passing, we can introduce horizonal scaling by placing several orthogonal components alongside each other, without letting them run into each others' concerns.
 
 === 4.2 Refactoring Complex Code
 
-..
+Code is ever-evolving, and we'll almost invariably end up with large projects that are not always the easiest to maintain. While we'll reserve the following couple of sections for practical recommendations to reduce complexity at an architectural level, this section focuses on reducing complexity in portions of an application that are already complex.
 
+==== 4.2.1 Embracing Variables over Clever Code
 
+Complex code is predominantly shorter than it should be, and often deceitfully so. An expression that might have involved 5 to 10 short lines of code usually ends up being represented in 1 or 2 clever lines of code. The problem with clever code is that we need to expend time and energy to read it whenever it's intent is not clear on our mind, which is only the case when we first write said code or right after spending considerable time analyzing it.
 
+One of the underlying issues that can be identified when reading complex code is that it uses few variables. In the dawn of programming, memory resources were scarce and thus programmers had to optimize allocation and this often meant reusing variables and using fewer of them. In modern systems, we don't have the need to treat memory as a sacred, precious, and limited resource. Instead, we can focus on making programs readable to both our future selves and fellow developers.
 
+Readability is better served by an abundance of properly named variables or functions than by sparsity. Consider the following example, part of a larger routine, where a program ensures that the user is currently logged in with a valid session, and otherwise redirects them to a login page.
 
-==== 4.2.1 Using Variables
+[source,javascript]
+----
+if (
+  auth !== undefined &&
+  auth.token !== undefined &&
+  auth.expires > Date.now()
+) {
+  // we have a valid token that hasn't expired yet
+  return
+}
+----
 
-.. use intermediary variables to improve readability, shy away from ternaries, const->let->var, etc.
+As the routine becomes larger, we collect `if` statements with non-obvious or complicated clauses, such as the reason why we're checking `auth` has a `token` value if we're not doing anything with it here. The solution is usually to add a comment explaining the reason why this check exists. In this case, the comment tells us this is a valid token that hasn't expired. We could turn that comment into code, and simplify the `if` statement in the process, by creating a small function that breaks down the conditional, as shown next.
+
+[source,javascript]
+----
+function hasValidToken(auth) {
+  if (auth === undefined || auth.token === undefined) {
+    return false
+  }
+  const hasNotExpiredYet = auth.expires > Date.now()
+  return hasNotExpiredYet
+}
+----
+
+We can now turn our `if` statement plus comment into a function call, as shown in the following bit of code. Certainly, the totality of our refactored code is a bit longer, but now it's self-descriptive. Code that describes what it does in the process of doing it doesn't require as many comments, and that's important because comments can become easily outdated. Moreover, we've extracted the long conditional in the `if` statement to a function, which keeps us more focused while parsing the codebase. If every condition or task was inline, we'd have to understand everything in order to understand how a program works. When we offload tasks and conditions to other functions, we're letting the reader know they can trust `hasValidToken` to check for validity of the `auth` object, and the conditional becomes a lot easier to digest.
+
+[source,javascript]
+----
+if (hasValidToken(auth)) {
+  return
+}
+----
+
+We could've used more variables without creating a function, inlining the computation of `hasValidToken` right before the `if` check. A crucial difference between the function-based refactor and the inlining solution is that we used a short-circuiting `return` statement to preemptively bail when we already knew the token was invalidfootnote:[In the example, we immediately return `false` when the token isn't present.], however we can't use `return` statements to bail from the snippet of code that computes `hasValidToken` in the following piece of code without coupling its computation to knowledge about what the routine should return for failure cases. As a result, our only options are tightly coupling the inline subroutine to its containing function, or using a logical or ternary operator in the intermediate steps of the inlined computation.
+
+[source,javascript]
+----
+const hasToken = auth === undefined || auth.token === undefined
+const hasValidToken = hasToken ? auth.expires > Date.now() : false
+if (hasValidToken) {
+  return
+}
+----
+
+Both of these options have their downsides. If we couple the return statements with the parent function, we'll need to be careful if we want to replicate the logic elsewhere, as the return statements and possibly their logic will have to adapt as well. If we decide to use ternary operators as a way of short-circuiting, we'll end up with logic that might be as complex as what we originally had in the `if` statement.
+
+Using a function not only avoids these two problems thanks to the ability to `return` intermediate results, but also defers reasoning about its contents until we actually need to understand how tokens are checked for validity.
+
+While moving conditionals to a `function` might sound like a trivial task, this approach is at the heart of modular design. It is by composing small bits of complexity using several additive functions that we can build large applications that are less straining to read. A large pool of mostly trivial functions can add up to a veritable codebase where each bit of code is relatively isolated and easy to understand, provided we trust functions do what their name says they do. In this vein, it is of utmost importance to think long and deep about the name of every function, every variable, and every package, directory, or data structure we conceive.
+
+When used deliberately and extensively, early returns -- sometimes referred to as guard clauses or short-circuits -- can be unparalleled when it comes to making an application as readable as possible. Let's explore this concept in further detail.
 
 ==== 4.2.2 Guard Clauses and Branch Flipping
 
-..
+
 
 > When we have long branches followed by an `else` and a shorter branch (generally the shorter branch would log an error, `throw`, return, or otherwise perform a failure handling), it's best to exit early by flipping the `if` condition, placing the short branch first, and returning. Here, I'm referring to the `if (response.status < 300) {` query. If we turn this into `response.status >= 300`, then when reading the code we immediately learn that it wouldn't continue for status codes beyond `299`. When done systematically, this makes the code easier to follow.
 
