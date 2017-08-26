@@ -131,7 +131,7 @@ When we have a long branch inside a conditional statement, chances are we're doi
 ----
 if (response) {
   if (!response.errors) {
-    // ... use `response`
+    // … use `response`
   } else {
     return false
   }
@@ -152,7 +152,7 @@ if (!response) {
 if (response.errors) {
   return false
 }
-// ... use `response`
+// … use `response`
 ----
 
 This early exit approach is often referred to as _guard clauses_, and one of their biggest benefits is that we can learn all the failure cases upon reading the first few lines of a function or piece of code. We're not limited to `return` statements: we could `throw` errors in a promise-based context or in an async function, and in callback chaining contexts we might opt for a `done(error)` callback followed by a `return` statement.
@@ -209,7 +209,97 @@ Given the stack-based nature of programming, it's not that easy to naturally app
 
 ==== 4.2.3 Extracting Functions
 
-e.g let with no assignment to const, moving mappers to bottom, anything that gets in the way of *current* flow we defer for later.
+Deliberate, pyramidal structures where we deal with higher level concerns near the top and switch to more specific problems as we go deeper into the inner workings of a system works wonders in keeping complexity on a tight leash. Such structures are particularly powerful because they break up complex items into their own individual units near the flat bottom of the system, avoiding a complicated interweaving of concerns that are fuzzied together, becoming undistinguishable from one another over time.
+
+Pushing anything that gets in the way of the current flow to the bottom of a function is an effective way of streamlining readability. As an example, consider the case where we have a non-trivial mapper inline in the heart of a function. In the following code snippet we're mapping the users into user models, as we often need to do when we prepare JSON responses for API calls.
+
+[source,javascript]
+----
+function getUserModels(done) {
+  findUsers((err, users) => {
+    if (err) {
+      done(err)
+      return
+    }
+
+    const models = users.map(user => {
+      const { name, email } = user
+      const model = { name, email }
+      if (user.type.includes('admin')) {
+        model.admin = true
+      }
+      return model
+    })
+
+    done(null, models)
+  })
+}
+----
+
+Now compare that code to the following bit of code, where we extracted the mapping function and shoved it out of the way. Given the mapping function doesn't need any of the scope from `getUserModels`, we can pull it out of that scope entirely, without the need to place `toUserModel` at the bottom of the `getUserModels` function. This means we can now also reuse `toUserModel` in other routines, we don't have to wonder whether the function actually depends on any of the contaning scope's context anymore, and `getUserModels` is now focused on the higher level flow where we find users, map them to their models, and return them.
+
+[source,javascript]
+----
+function getUserModels(done) {
+  findUsers((err, users) => {
+    if (err) {
+      done(err)
+      return
+    }
+
+    const models = users.map(toUserModel)
+
+    done(null, models)
+  })
+}
+
+function toUserModel(user) {
+  const { name, email } = user
+  const model = { name, email }
+  if (user.type.includes('admin')) {
+    model.admin = true
+  }
+  return model
+}
+----
+
+Furthermore, if there were additional work to be done between the mapping and the callback, it could also be moved into another small function that wouldn't get in the way of our higher level `getUserModels` function.
+
+A similar case occurs when we have a variable that gets defined based on a condition, as shown in the next snippet. Bits of code like this can distract the reader away from the core purpose of a function, to the point where they're often ignored or glossed over.
+
+[source,javascript]
+----
+// …
+let website = null
+if (user.details) {
+  website = user.details.website
+} else if (user.website) {
+  website = user.website
+}
+// …
+----
+
+It's best to refactor this kind of assignments into a function, like the one shown next. Note how we've included a `user` parameter so that we can push the function out of the scope chain where we've originally defined the user object, and at the same time went from a `let` binding to a `const` binding. When reading this piece of code later down the line, the benefit of `const` is that we'll know the binding won't change, as opposed to `let` with which we can't be certain bindings won't change over time, adding to the pile of things the reader should be watching out for when trying to understand the algorithm.
+
+[source,javascript]
+----
+// …
+const website = getUserWebsite(user)
+// …
+
+function getUserWebsite(user) {
+  if (user.details) {
+    return user.details.website
+  }
+  if (user.website) {
+    return user.website
+  }
+  return null
+}
+----
+
+...
+
 
 ==== 4.2.4 Flattening Nested Callbacks
 
