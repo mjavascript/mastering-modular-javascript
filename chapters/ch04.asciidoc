@@ -298,8 +298,7 @@ function getUserWebsite(user) {
 }
 ----
 
-...
-
+When we want to name an aspect of a routine without adding a comment, we could create a function to host that functionality. Doing so doesn't just give a name to what the algorithm is doing, but it also allows us to push that code out of the way, leaving behind only the high level description of what's going to happen.
 
 ==== 4.2.4 Flattening Nested Callbacks
 
