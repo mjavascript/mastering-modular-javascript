@@ -304,6 +304,12 @@ When we want to name an aspect of a routine without adding a comment, we could c
 
 .. tips/tricks to deal w async flows
 
+
+
+
+
+
+
 ==== 4.2.5 Factoring Similar Tasks
 
 .. (such as when we do `createTaskFor(articles)` and `createTaskFor(weeklies)`), or maybe passing a few things but preserving internal task flow overall
