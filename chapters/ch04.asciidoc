@@ -207,7 +207,7 @@ Perhaps a more specific analogy for this kind of spiraling approach can be found
 
 Given the stack-based nature of programming, it's not that easy to naturally approach programs as if they were newspaper articles. We can, however, defer execution of implementation details to other functions or subroutines, and thanks to hoisting, we can place those subroutines after their higher level counterparts. In doing so, we're organizing our programs in a way that invites readers in, shows them a few high level hints, and then gradually unveils the spooky details of how a feature is implemented.
 
-==== 4.2.3 Extracting Functions
+==== 4.2.4 Extracting Functions
 
 Deliberate, pyramidal structures where we deal with higher level concerns near the top and switch to more specific problems as we go deeper into the inner workings of a system works wonders in keeping complexity on a tight leash. Such structures are particularly powerful because they break up complex items into their own individual units near the flat bottom of the system, avoiding a complicated interweaving of concerns that are fuzzied together, becoming undistinguishable from one another over time.
 
@@ -300,36 +300,197 @@ function getUserWebsite(user) {
 
 When we want to name an aspect of a routine without adding a comment, we could create a function to host that functionality. Doing so doesn't just give a name to what the algorithm is doing, but it also allows us to push that code out of the way, leaving behind only the high level description of what's going to happen.
 
-==== 4.2.4 Flattening Nested Callbacks
+==== 4.2.5 Flattening Nested Callbacks
 
-.. tips/tricks to deal w async flows
+Codebases with asynchronous code flows often fall into the so-called "callback hell", where each callback creates a new level of indentation, making code harder and harder to read as we approach the deep end of the asynchronous flow chain.
 
+[source,javascript]
+----
+a(function () {
+  b(function () {
+    c(function () {
+      d(function () {
+        console.log('hi!')
+      })
+    })
+  })
+})
+----
 
+The foremost problem with this kind of structure is scope inheritance. In the deepest callback, passed to the `g` function, we've inherited the combined scopes of all the parent callbacks. As functions become larger, and more variables are bound into each of these scopes, it becomes ever more challenging to understand one of the callbacks in isolation from its parents.
 
+This kind of coupling can be reverted by naming the callbacks and placing them all in the same nesting level. Named functions may be reused in other parts of our component, or exported to be used elsewhere. In the following example we've eliminated up to 3 levels of unnecessary nesting, and by eliminating nesting we've made the scope for each function more explicit.
 
+[source,javascript]
+----
+a(a1)
+function a1() {
+  b(b1)
+}
+function b1() {
+  c(c1)
+}
+function c1() {
+  d(d1)
+}
+function d1() {
+  console.log('hi!')
+}
+----
 
+When we do need some of the variables that existed in the parent scope, we can explicitly pass them on to the next callback in the chain. The following example passes an arrow function to `d`, as opposed to passing the `d1` callback directly. When executed, the arrow function ends up calling `d1` anyway, but now it has the additional parameters we needed. These parameters can come from anywhere, and we can do this throughout the chain, while keeping it all in the same indentation level.
 
+[source,javascript]
+----
+a(a1)
+function a1() {
+  b(b1)
+}
+function b1() {
+  c(c1)
+}
+function c1() {
+  d(() => d1('hi!'))
+}
+function d1(salute) {
+  console.log(salute) // <- 'hi!'
+}
+----
 
-==== 4.2.5 Factoring Similar Tasks
+Now, this could also be resolved using a library such as `async`, which simplifies the flattened chaining process by establishing patterns. The `async.series` method accepts an array of task functions. When called, the first task is executed and `async` waits until the `next` callback is invoked, before jumping onto the next task. When all tasks have been executed, or an error arises in one of the tasks, the completion callback in the second argument passed to `async.series` is executed. In the following illustrative example, each of the 3 tasks is executed in series, one at a time, waiting a second before each task signals its own completion. Lastly, the `'done!'` message is printed to the console.
 
-.. (such as when we do `createTaskFor(articles)` and `createTaskFor(weeklies)`), or maybe passing a few things but preserving internal task flow overall
+[source,javascript]
+----
+async.series([
+  next => setTimeout(() => next(), 1000),
+  next => setTimeout(() => next(), 1000),
+  next => setTimeout(() => next(), 1000)
+], err => console.log(err ? 'failed!' : 'done!'))
+----
 
-==== 4.2.6 Disentangling Headphone Wires
+Libraries like `async` come with several ways of mixing and matching asynchronous code flows, be them in series of concurrent, allowing us to pass variables between callbacks without having to nest together entire asynchronous flows.
 
-.. a bit of a rehash of 4.2.2 where we visit how we can decouple unrelated functionality by creating focused functions under a shared scope.
+Naturally, callbacks aren't the only asynchronous flow pattern that might end up in hell. Promises can end up in this state just as easily, as shown in the next contrived snippet.
+
+[source,javascript]
+----
+Promise.resolve(1).then(() =>
+  Promise.resolve(2).then(() =>
+    Promise.resolve(3).then(() =>
+      Promise.resolve(4).then(value => {
+        console.log(value) // <- 4
+      })
+    )
+  )
+)
+----
+
+A similar piece of code that wouldn't be affected by the nesting problem is shown next. Here, we're taking advantage that promises behave in a tree-like manner, where we don't necessarily need to attach reactions onto the last promise, and instead we can return those promises so that the chaining can always occur at the top level, allowing us to avoid any and all scope inheritance.
+
+[source,javascript]
+----
+Promise.resolve(1)
+  .then(() => Promise.resolve(2))
+  .then(() => Promise.resolve(3))
+  .then(() => Promise.resolve(4))
+  .then(value => {
+    console.log(value) // <- 4
+  })
+----
+
+Similarly, using async functions can turn what was previously a promise-based flow and turn it into something that can be mapped to our own mental model of how the program's execution flows. The following bit of code is similar to the last snippet we looked at, but using `async`/`await` instead.
+
+[source,javascript]
+----
+async function main() {
+  await Promise.resolve(1)
+  await Promise.resolve(2)
+  await Promise.resolve(3)
+  const value = await Promise.resolve(4)
+  console.log(value) // <- 4
+}
+----
+
+==== 4.2.6 Factoring Similar Tasks
+
+We've already discussed at length why creating abstractions isn't always the best way of reducing complexity in an application. Abstractions can be particularly damaging when created too early: at the time we might not have enough information about the shape and requirements for other components that we might want to hide behind the abstraction layer, and over time we might end up aggressively shaping components only so that they fit the abstraction, which could have been avoided by not settling for an abstraction too early.
+
+When we do avoid creating abstractions prematurely, we'll start noticing functions that have an uncanny resemblance to the shape of similar functions: maybe the flow is identical, maybe the output is similar, or maybe all that really changes is we're accessing an attribute named `href` in one case and an attribute named `src` in another case.
+
+Consider the case of an HTML crawler which needs to pull out snippets of an HTML page and reuse them later in a different context. Among other things, this crawler will need to take relative resource locators like `/weekly` and resolve them to absolute endpoints like `https://ponyfoo.com/weekly`, depending on the origin where the resource was crawled from. This way, the HTML snippets can then be repurposed on other mediums such as on a different origin or a PDF file, without breaking the end-user experience.
+
+The following piece of code takes a piece of HTML and transforms `a[href]` and `img[src]` into absolute endpoints using the `$` jQuery-like DOM utility library.
+
+[source,javascript]
+----
+function absolutizeHtml(html, origin) {
+  const $dom = $(html)
+  $dom.find('a[href]').each(function () {
+    const $element = $(this)
+    const href = $element.attr('href')
+    const absolute = absolutize(href, origin)
+    $element.attr('href', absolute)
+  })
+  $dom.find('img[src]').each(function () {
+    const $element = $(this)
+    const src = $element.attr('src')
+    const absolute = absolutize(src, origin)
+    $element.attr('src', absolute)
+  })
+  return $dom.html()
+}
+----
+
+As the small function it is, it'd be perfectly acceptable to keep `absolutizeHtml` as-is. However, if we later decide to add `iframe[src]`, `script[src]`, and `link[href]` to the list of attributes that might contain endpoints we want to transform, we'll probably want to avoid having five copies of the same routine, as that's more likely to be confusing and result in changes being made to one of them without being mirrored in the other cases, increasing complexity.
+
+The following bit of code keeps all attributes we want to transform in an array, and abstracts the repeated bit of code so that it's reused for every tag and attribute.
+
+[source,javascript]
+----
+const attributes = [
+  ['a', 'href'],
+  ['img', 'src'],
+  ['iframe', 'src'],
+  ['script', 'src'],
+  ['link', 'href']
+]
+
+function absolutizeHtml(html, origin) {
+  const $dom = $(html)
+  attributes.forEach(absolutizeAttribute)
+  return $dom.html()
+
+  function absolutizeAttribute([ tag, property ]) {
+    $dom.find(`${ tag }[${ property }]`).each(function () {
+      const $element = $(this)
+      const value = $element.attr(property)
+      const absolute = absolutize(value, origin)
+      $element.attr(property, absolute)
+    })
+  }
+}
+----
+
+A similar situation occurs when we have a concurrent flow that remains more or less constant across a number of different functions, in which case we might want to consider keeping the flow in its own function, and passing a callback for the actual processing logic that is different in each case.
+
+In other cases, we might notice how there's a few different components that all need the same piece of functionality. Commenting features often fall in this case, where different components like user profiles, projects, or artifacts, might need the ability to receive, show, edit, and delete comments. This case can be interesting because it's the business requirement is not always identified upfront, and we might embed the child feature into the parent component before realizing it'd be useful to extract the feature so that it can be reused in other parent components. While this sounds obvious in hindsight, it's not always clear when we'll need to reuse some functionality somewhere else, and keeping every aspect of functionality isolated just in case we need to reuse them can be costly in terms of time and development effort.
+
+More often than not, however, abstractions can end up complicating matters. It might be that the tradeoff isn't worth it because the code becomes much harder to read, or maybe because the underlying code isn't mature enough yet, or we don't know what special requirements we may end up with for other objects adopting similar functionality, meaning we're not comfortable creating an abstraction that could lead to unforeseen problems in the future.
+
+Whenever we are uncertain about whether an abstraction is up to muster, it pays to go back to the original piece of code we had before introducing the abstraction, and comparing the two pieces. Is the new piece easier to understand, modify, and consume? Would that still be the case as a newcomer? Try and consider how the outcome to those questions would change if you hadn't looked at this code in a while. Ask your co-workers for their opinion, too; given they haven't seen that code yet and they may end up having to consume it, they're great candidates to help decide which approach is better.
 
 ==== 4.2.7 Slicing Large Functions
 
-When all else fails, consider breaking what would otherwise inevitably be a large function into smaller functions.
+Consider breaking what would otherwise inevitably be a single large function into smaller functions. These may be organized by splitting functionality by steps, by different aspects of the same task, always relying on guard clauses to do all of our error checking up front, and ensuring the state is what we allow it to be at each point in time.
 
-.. how these can be organized by splitting the functionality by steps, aspects, or any other logical grouping we can come up with
+
 
 
 === 4.3 State as Entropy
 
 ..
 
-==== 4.3.1 It's Complicated
+==== 4.3.1 Current State: It's Complicated
 
 section on how state is terrible and the more state there is the less predictable our code becomes.
 
