@@ -481,18 +481,40 @@ Whenever we are uncertain about whether an abstraction is up to muster, it pays 
 
 ==== 4.2.7 Slicing Large Functions
 
-Consider breaking what would otherwise inevitably be a single large function into smaller functions. These may be organized by splitting functionality by steps, by different aspects of the same task, always relying on guard clauses to do all of our error checking up front, and ensuring the state is what we allow it to be at each point in time.
+Consider breaking what would otherwise inevitably be a single large function into smaller functions. These may be organized by splitting functionality by steps, by different aspects of the same task, always relying on guard clauses to do all of our error checking up front, ensuring that state is constrained by what we allow it to be at each point in time.
 
+The overall structure of your typical function should begin with guard clauses, making sure the input we receive is what we expect: enforcing required parameters, their correct data types, correct data ranges, and so on. If these inputs are malformed, we should bail immediately, ensuring we don't work with inputs we're unprepared to deal with, and ensuring the consumer gets an error message that explains the root reason why they're not getting the results they expect, as opposed to a message that might involve debugging work, such as `undefined is not a function` caused by trying to call an input that was supposed to be a function but wasn't -- or was supposed to result in our routine finding a function, but didn't.
 
+Once we know the inputs are well-formed, data processing can begin. We'll transform the inputs, map them to the output we want to produce, and return that output. Here we have the opportunity to break apart the function into several pieces. Each aspect of the transformation of inputs into output is potentially its own function. The way of reducing complexity in a function is not by collapsing hundreds of lines of code into tens of complicated lines of code. Instead, we can move each of these long pieces of code into individual functions that only deal with one aspect of the data. Those functions can then also be hoisted out of our function and onto its parent scope, showing that there wasn't a reason why a particular aspect of transforming the inputs had to be coupled to the entire function doing the transformation.
 
+Each aspect of a transformation operation can be analyzed and moved into its own function. The smaller function may take a few of the inputs in the larger function, or perhaps some of the intermediate values that were produced in the larger function. It can then conduct its own input sanitization, and be broken apart even further. The process of identifying aspects of an operation that can be recursively compartimentalized and moved into their own functions is highly effective because it allows for dauntingly large functions to be broken into simpler pieces that aren't as daunting to refactor.
+
+At first, we can identify the largest aspects of a function, which might be 3 or 4, and break those apart. The first part might involve filtering out the parts of the input we're not interested in, the second might involve mapping that into something else, and the third part might involve merging all of the data together. Once we've identified each aspect of the function we might break those into their own functions, with their own inputs and output. Subsequently, we can do this for each of those smaller functions.
+
+We can keep doing this for as long as there's opportunity for the functions to be simplified. As discussed in the previous section, it's valuable to take a step back after each of these refactors, and evaluate whether the end result is indeed simpler and easier to work with than what we had before it was refactored.
 
 === 4.3 State as Entropy
 
-..
+Entropy can be defined as a lack of order or predictability. The more entropy there is in a system, the more disordered and unpredictable the system becomes. Program state is a lot like entropy. Whether we're discussing global application state, user session state, or a particular component instance's state for a given user session, each bit of state we introduce to an application creates a new dimension to take into account when trying to understand the flow of a program, how it came to the state it's currently at, or how the current state dictates and helps predict the flow moving forward.
+
+In this section, we'll discuss ways of eliminating and containing state, as well as immutability. First off, let's discuss what constitutes current state.
 
 ==== 4.3.1 Current State: It's Complicated
 
-section on how state is terrible and the more state there is the less predictable our code becomes.
+
+
+
+
+.. section on how state is terrible and the more state there is the less predictable our code becomes.
+
+
+
+
+
+
+
+
+
 
 ==== 4.3.2 Eliminating Incidental State
 
@@ -522,16 +544,12 @@ section on how state is terrible and the more state there is the less predictabl
 
 .. How the right data structures can make our code much easier to write and read. It might be worth mapping data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
 
-==== 4.4.4 Reducing, Mapping, Filtering, and Sorting Data
+==== 4.4.4 Mapping, Filtering, Sorting, and Reducing Data
 
 ..
 
 
 
 
----
 
-most of this chapter should be javascript code programming best practices:
-look up code and figure out things you did. compare to code other people wrote and identify problems, explain.
 
----
