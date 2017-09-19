@@ -507,7 +507,7 @@ At its heart, state is mutable. Even if the variable bindings themselves are imm
 
 Consider a game of chess, where each of two players starts with 16 pieces, each deterministically assigned a position on a checkerboard. The initial state is always the same. As each player inputs their actions, moving and trading pieces, the system state mutates. A few moves into the game, there is a good chance we'll be facing a game state we haven't ever experienced before. Computer program state is a lot like a game of chess, except there's more nuance in the way of user input, and an infinitude of possible board positions and state permutations.
 
-In the world of web development, a human decides to open a new tab in their favorite web browser and they then google for "cat in a pickle gifs". The browser allocates a new process through a system call to the operating system, which chemically shifts some bits around on the physical hardware that lies inside the human's computer. Before the HTTP request hits the network, we need to hit DNS servers, engaging in the ellaborate process of casting `google.com` into an IP address. The browser then checks whether there's a ServiceWorker installed, and assuming there isn't one the request finally takes the default route of querying Google's servers for "cat in a pickle gifs". Naturally, Google receives this request at one of the front-end edges of its public network, in charge of balancing the load and routing requests to healthy back-end services. The query goes through a variety of analyzers that attempt to break it down to its semantic roots, stripping the query down to its essential keywords in an attempt to better match relevant results. As the search engine figures out the 10 most relevant results for "cat pickle gif" out of billions of pages in its index -- which was of course primed by a different system that's also part of the whole -- Google pulls down a highly targeted piece of relevant advertisement about cat gifs that matches what they believe is the demographic the human making the query belongs to, thanks to a sophisticated ad network, figures out whether the user is authenticated with Google through an HTTP header session cookie and the search results page starts being constructed and streamed to the human, who now appears impatient and fidgety. As the first bits of HTML being streaming down the wire, the search engine produces its results and hands them back to the front-end servers, which includes it in the HTML stream that's sent back to the human. The web browser has been working hard at this too, parsing the incomplete pieces of HTML that have been streaming down the wire as best it could, even daring to launch other admirably and equally-mind-boggling requests for HTTP resources presumed to be JavaScript, CSS, font, and image files as the HTML continues to stream down the wire. As the first few chunks of HTML are converted into a DOM tree, the browser would finally be able to begin rendering bits and pieces of the page on the screen, if it weren't because it's still waiting on those equally-mind-boggling CSS and font requests. As the CSS stylesheets and fonts are transmitted, the browser begins modelling the CSSOM and getting a more complete picture of how to turn the HTML and CSS plain text chunks provided by Google servers into a graphical representation that the human finds pleasant. Browser extensions get a chance to meddle with the content, removing the highly targeted piece of relevant advertisement about cat gifs before I even realize Google hoped I wouldn't block ads this time around. A few seconds have passed by since I first decided to search for cats in a pickle. Needless to say, thousands of others brought similarly inane requests to the same systems during this time.
+In the world of web development, a human decides to open a new tab in their favorite web browser and they then google for "cat in a pickle gifs". The browser allocates a new process through a system call to the operating system, which shifts some bits around on the physical hardware that lies inside the human's computer. Before the HTTP request hits the network, we need to hit DNS servers, engaging in the elaborate process of casting `google.com` into an IP address. The browser then checks whether there's a ServiceWorker installed, and assuming there isn't one the request finally takes the default route of querying Google's servers for "cat in a pickle gifs". Naturally, Google receives this request at one of the front-end edges of its public network, in charge of balancing the load and routing requests to healthy back-end services. The query goes through a variety of analyzers that attempt to break it down to its semantic roots, stripping the query down to its essential keywords in an attempt to better match relevant results. As the search engine figures out the 10 most relevant results for "cat pickle gif" out of billions of pages in its index -- which was of course primed by a different system that's also part of the whole -- Google pulls down a highly targeted piece of relevant advertisement about cat gifs that matches what they believe is the demographic the human making the query belongs to, thanks to a sophisticated ad network, figures out whether the user is authenticated with Google through an HTTP header session cookie and the search results page starts being constructed and streamed to the human, who now appears impatient and fidgety. As the first bits of HTML being streaming down the wire, the search engine produces its results and hands them back to the front-end servers, which includes it in the HTML stream that's sent back to the human. The web browser has been working hard at this too, parsing the incomplete pieces of HTML that have been streaming down the wire as best it could, even daring to launch other admirably and equally-mind-boggling requests for HTTP resources presumed to be JavaScript, CSS, font, and image files as the HTML continues to stream down the wire. As the first few chunks of HTML are converted into a DOM tree, the browser would finally be able to begin rendering bits and pieces of the page on the screen, if it weren't because it's still waiting on those equally-mind-boggling CSS and font requests. As the CSS stylesheets and fonts are transmitted, the browser begins modeling the CSSOM and getting a more complete picture of how to turn the HTML and CSS plain text chunks provided by Google servers into a graphical representation that the human finds pleasant. Browser extensions get a chance to meddle with the content, removing the highly targeted piece of relevant advertisement about cat gifs before I even realize Google hoped I wouldn't block ads this time around. A few seconds have passed by since I first decided to search for "cat in a pickle gifs". Needless to say, thousands of others brought similarly inane requests to the same systems during this time.
 
 Not only does this example demonstrate the marvelous machinery and infrastructure that fuels even our most flippant daily computing experiences, but it also illustrates how abundantly hopeless it is to make sense of a system as a whole, let alone its comprehensive state at any given point in time. After all, where do we draw the boundaries? Within the code we wrote? The code that powers our customer's computers? Their hardware? The code that powers our servers? Its hardware? The internet as a whole? The power grid?
 
@@ -519,27 +519,80 @@ Whenever there's persistance involved, there's going to be a discrepancy between
 
 Incidental state can occur when we have a piece of data that's used in several parts of an application, and which is derived from other pieces of data. When the original piece of data is updated, it wouldn't be hard to inadvertently leave the derived pieces of data in their current state, making them stale in comparison with the updated original pieces of data. As an example, consider a piece of user input in Markdown and the HTML representation derived from that piece of Markdown. If the piece of Markdown is updated but the previously compiled pieces of HTML are not, then different parts of the system might display different bits of HTML out of what was apparently the same single Markdown source.
 
-When we persist derived state, we're putting the original and the derived data at risk of falling out of sync. This isn't the case just when dealing with persistance layers, but can also occur in a few other scenarios as well. When dealing with caching layers, which may become stale because the underlying original piece of content is updated but we forget to invalidate the stale piece of derived content. Database denormalization is another common occurrence of this problem, whereby creating a lot of derived state can result in synchronization problems. An example of this might be forum software where user profiles are denormalized into comments in an effort to save a database roundtrip, but then when users update their profile, their old comments preserve an stale avatar, signature, or display name. To avoid this kind of issue, we should always consider recomputing derived state from its roots. Even though doing so won't always be possible or even practical, encouraging this kind of thinking will, if anything, increase awareness about the subtle intricacies of denormalized state.
+When we persist derived state, we're putting the original and the derived data at risk of falling out of sync. This isn't the case just when dealing with persistance layers, but can also occur in a few other scenarios as well. When dealing with caching layers, their content may become stale because the underlying original piece of content is updated but we forget to invalidate pieces of content derived from the updated data. Database denormalization is another common occurrence of this problem, whereby creating derived state can result in synchronization problems and stale byproducts of the original data.
+
+This lack of synchronization is often observed in discussion forum software, where user profiles are denormalized into comment objects in an effort to save a database roundtrip. When users update later update their profile, however, their old comments preserve an stale avatar, signature, or display name. To avoid this kind of issue, we should always consider recomputing derived state from its roots. Even though doing so won't always be possible, performant, or even practical, encouraging this kind of thinking across a development team will, if anything, increase awareness about the subtle intricacies of denormalized state.
+
+As long as we're aware of the risks of data denormalization, we can then indulge in it. A parallel could be drawn to the case of performance optimization, where we should be aware of how attempting to optimize a program basing off of microbenchmarks in stead of data-driven optimization will most likely result in wasted developer time. Furthermore, just like with caches and other intermediate representations of data, performance optimization can lead to bugs and code that's ultimately harder to maintain, which is why neither should be embarked upon lightly, unless there's a business case where performance is hurting the bottom line.
 
 ==== 4.3.3 Containing State
 
-.. when we must have state, keep it as constrained as possible
+State is inevitable. As we discussed in section 4.3.1, though, the full picture hardly affects our ability to maintain small parts of that state tree. In the local case -- each of the interrelated but ultimately separate pieces of code we work with in our day to day -- all that matters are the inputs we receive and the outputs we produce. That said, generating a large amount of output where we could instead emit a single piece of information is undesirable.
 
+When all intermediate state is contained inside a component instead of being leaked to others, we're reducing the friction in interacting with our component or function. The more we condense state into its smallest possible representation for output purposes, the better contained our functions will become. Incidentaly, we're making the interface easier to consume. Since there's less state to draw from, there's fewer ways of consuming that state. This reduces the amount of possible use cases, but by favoring composability over serving every possible need, we're making each piece of functionality, when evaluated on its own, simpler.
 
+One other case where we may incidentally increase complexity is whenever we modify the property values of an input. This type of operation should be made extremely explicit, as to not be confused, and avoided where possible. If we assume functions to be defined as the equation between the inputs we receive and the outputs we produce, then the side-effects  are ill-advised. Mutations on the input within the body of a function is one example of side-effects, which can be a source of bugs and confusion, particularly due to the difficulty in tracking down the source for these mutations.
 
+It is not uncommon to observe functions that modify an input parameter and then return that parameter. This is often the case with `Array#map` callbacks, where the developer wants to change a property or two on each object in a list, but also to preserve the original objects as the elements in the collection, as shown in the following example.
 
+[source,javascript]
+----
+movies.map(movie => {
+  movie.profit = movie.gross - movie.budget
+  return movie
+})
+----
 
+In these cases it might be best to avoid using `Array#map` altogether, using `Array#forEach` or `for..of` instead, as shown next.
 
+[source,javascript]
+----
+for (const movie of movies) {
+  movie.profit = movie.gross - movie.budget
+}
+----
 
+Neither `Array#forEach` nor `for..of` allow for chaining, assuming you wanted to filter the `movies` by a criteria such as "profit is greater than $15M": they're pure loops that don't produce any output. This is a good problem to have, however, because it explicitly separates data mutations at the `movie` item level, where we're adding a `profit` property to each item in `movies`; from transformations at the `movies` level, where we want to produce an entirely new collection consisting only of expensive movies.
 
+[source,javascript]
+----
+for (const movie of movies) {
+  movie.profit = movie.amount * movie.unitCost
+}
+const successfulMovies = movies.filter(
+  movie => movie.profit > 15
+)
+----
 
-
+Relying on immutability would be an alternative that doesn't involve pure loops nor does resort to breakage-prone side-effects.
 
 ==== 4.3.4 Leveraging Immutability
 
-..
+The following example takes advantage of the object spread operator to copy every property of `movie` into a new object, and then adds a `profit` property to it. Here we're creating a new collection, made up of new `movie` objects.
+
+[source,javascript]
+----
+const movieModels = movies.map(movie => ({
+  ...movie,
+  profit: movie.amount * movie.unitCost
+}))
+const successfulMovies = movieModels.filter(
+  movie => movie.profit > 15
+)
+----
+
+Thanks to us making fresh copies of the objects we're working with, we've preserved the `movies` collection intact. If we now assume that `movies` was an input to our function, we could say that modifying any movie in that collection would've made our function impure, since it'd have the side-effect of unexpectedly altering the input.
+
+By introducing immutability, we've kept the function pure. That means that its output only depends on its inputs, and that we don't create any side-effects such as changing the inputs themselves. This in turn guarantees that the function is idempotent, where calling a function repeatedly with the same input always produces the same result, given the output depends solely on the inputs and there are no side-effects. In contrast, the idempotence property would've been brought into question if we had tainted the input by adding a `profit` field to every movie.
+
+Large amounts of intermediate state or logic which permutates data into different shapes, back and forth, may be a signal that we've picked poor representations of our data. When the right data structures are identified, we'll notice there's a lot less transformation, mapping, and looping involved into getting inputs to become the outputs we need to produce. In section 4.4 we'll dive deeper into data structures.
 
 === 4.4 Data Structures are King
+
+
+
+
+
 
 .. a section on how data structures make or break an application, and why data-driven is better than state or logic driven
 
