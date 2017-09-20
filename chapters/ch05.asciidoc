@@ -5,3 +5,5 @@
 5.3 Composition Over Inheritance
 5.4 Events
 5.5 Conventions
+
+# Mapping, Filtering, Sorting, and Reducing Data?

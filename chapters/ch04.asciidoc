@@ -623,7 +623,7 @@ An array-based list is great whenever we need to sort the list or map its object
 }
 ----
 
-The data structure we pick will constrain and determine the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures.
+The data structure we pick will constrain and determine the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures. It's usually well worth it to transform data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
 
 Now, we can't possibly foresee all scenarios when coming up with the data structure we'll use at first, but what we can do is create intermediate representations of the same underlying data using new structures that do fit the new requirements. We can then leverage these structures, which were optimized for the new requirements, when writing code to fulfill those requirements. The alternative, resorting to the original data structure when writing new code that doesn't quite fit with it, will invariably result in logic that has to work around the limitations of the existing data structure, and as a result we'll end up with less than ideal code, that might take some effort understanding and updating.
 
@@ -677,23 +677,14 @@ We should aim to keep logic restrictive and only as flexible as deemed necessary
 
 Data, on the other hand, should be transformed to fit elegant interfaces, rather than trying to fit the same data structure into every function. Doing so would result in frustration similar to how a rushed abstraction layer that doesn't lend itself to being effortlessly consumed to leverage the implementations underlying it. These transformations should be kept separate from the data itself, as to ensure reusability of each intermediate representation of the data on its own.
 
-==== 4.4.2 Restricting Domain Logic
+==== 4.4.2 Restricting and Clustering Logic
 
-.. We should strive to keep code that knows about a particular data structure or set of structures contained in as few modules as possible. Should the data structures or the logic around them require changes, the ripple effects of those changes can be devastating if domain logic is spread across the codebase.
+Should a data structure -- or code that leverages said data structure -- require changes, the ripple effects can be devastating when the relevant logic is sprinkled all across the codebase. Consequently, when this happens, we need to update code from all over, making a point of not missing any occurrences, updating and fixing test cases as we go, and testing some more to certify that the updates haven't broken down our application logic, all in one fell swoop.
 
+For this reason, we should strive to keep code that deals with a particular data structure contained in as few modules as possible. For instance, if we have a `BlogPost` database model, it probably makes sense to start out having all the logic regarding a `BlogPost` in a single file. In that file, we could expose an API allowing consumers to create, publish, edit, delete, update, search, or share blog posts. As the functionality around blog posts grows, we might opt for spreading the logic into multiple colocated files: one might deal with search, parsing raw end-user queries for tags and terms that are then passed to Elasticsearch or some other search engine; another might deal with sharing, exposing an API to share articles via email or through different social media platforms; and so on.
 
+Splitting logic into a few files under the same directory helps us prevent an explosion of functionality that mostly just has a data structure in common, bringing together code that's closely related in terms of functionality.
 
+The alternative, placing logic related to a particular aspect of our application such as blog posts directly in the components where it's needed, will cause trouble if left unchecked. Doing so might be beneficial in terms of short-term productivity, but longer-term we need to worry about coupling logic, strictly related to blog posts in this case, together with entirely different concerns. At the same time, if we sprinkle a bulk of the logic across several unrelated components, we become at risk of missing critical aspects of functionality when making large-scale updates to the codebase, and because of this we might end up making the wrong assumptions, or mistakes that only become evident much further down the line.
 
-==== 4.4.3 Choosing Data Over Code
-
-.. How the right data structures can make our code much easier to write and read. It might be worth mapping data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
-
-==== 4.4.4 Mapping, Filtering, Sorting, and Reducing Data
-
-..
-
-
-
-
-
-
+It's acceptable to start out placing logic directly where it's needed at first, when it's unclear whether the functionality will grow or how much. Once this initial exploratory period ellapses, and it becomes clear the functionality is here to stay and more might be to come, it's advisable that we isolate the functionality for the reasons stated above. Later, as the functionality grows in size and in concerns that need to be addressed, we can componentize each aspect into different modules that are still grouped together logically in the file system, making it easy to take all of interrelated concerns into account when need be.
