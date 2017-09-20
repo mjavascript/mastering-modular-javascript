@@ -589,20 +589,100 @@ Large amounts of intermediate state or logic which permutates data into differen
 
 === 4.4 Data Structures are King
 
+Data structures can make or break an application, as design decisions around data structures govern how those structures will be accessed. Consider the following piece of code, where we have a list of blog posts.
 
+[source,javascript]
+----
+[{
+  slug: 'understanding-javascript-async-await',
+  title: 'Understanding JavaScript’s async await',
+  contents: '…'
+}, {
+  slug: 'pattern-matching-in-ecmascript',
+  title: 'Pattern Matching in ECMAScript',
+  contents: '…'
+}, …]
+----
 
+An array-based list is great whenever we need to sort the list or map its objects into a different representation, such as HTML. It's not so great at other things, such as finding individual elements to use, update, or remove. Arrays also make it harder to preserve uniqueness, such as if we wanted to ensure the `slug` field was unique across all blog posts. In these cases, we could opt for an object map based approach, as the one shown next.
 
+[source,javascript]
+----
+{
+  'understanding-javascript-async-await': {
+    slug: 'understanding-javascript-async-await',
+    title: 'Understanding JavaScript’s async await',
+    contents: '…'
+  },
+  'pattern-matching-in-ecmascript': {
+    slug: 'pattern-matching-in-ecmascript',
+    title: 'Pattern Matching in ECMAScript',
+    contents: '…'
+  },
+  …
+}
+----
 
+The data structure we pick will constrain and determine the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures.
 
-.. a section on how data structures make or break an application, and why data-driven is better than state or logic driven
+Now, we can't possibly foresee all scenarios when coming up with the data structure we'll use at first, but what we can do is create intermediate representations of the same underlying data using new structures that do fit the new requirements. We can then leverage these structures, which were optimized for the new requirements, when writing code to fulfill those requirements. The alternative, resorting to the original data structure when writing new code that doesn't quite fit with it, will invariably result in logic that has to work around the limitations of the existing data structure, and as a result we'll end up with less than ideal code, that might take some effort understanding and updating.
 
-==== 4.4.1 Isolating Data
+When we take the road of adapting data structures to the changing needs of our programs, we'll find that writing programs in such a data-driven way is better than relying on logic alone to drive their behaviors. When the data lends itself to the algorithms that work with it, our programs become straightforward: the logic focuses on the business problem being solved while the data is focused on avoiding an interleaving of data transformations within the program logic itself. By making a hard separation between data or its representations and the logic that acts upon it, we're keeping different concerns separate. When we differentiate the two, data is data and logic stays logic.
 
-.. Keeping data separate from methods that modify or access said data can help reduce complexity. When data is not cluttered with functionality, it becomes easier to read, understand, and serialize.
+==== 4.4.1 Isolating Data and Logic
+
+Keeping data strictly separate from methods that modify or access said data structures can help reduce complexity. When data is not cluttered with functionality, it becomes detached from it and thus easier to read, understand, and serialize. At the same time, the logic that was previously tied to our data can now be used when accessing different bits of data that share some trait with it.
+
+As an example, the following piece of code shows a piece of data that's encumbered by the logic which works with it. Whenever we want to leverage the methods of `Value`, we'll have to box our input in this class, and if we later want to unbox the output, we'll need to cast it with a custom-built `valueOf` method or similar.
+
+[source,javascript]
+----
+class Value {
+  constructor(value) {
+    this.state = value
+  }
+  add(value) {
+    this.state += value
+    return this
+  }
+  multiply(value) {
+    this.state *= value
+    return this
+  }
+  valueOf() {
+    return this.state
+  }
+}
+console.log(+new Value(5).add(3).multiply(2)) // <- 16
+----
+
+Consider now, in contrast, the following piece of code. Here we have a couple of functions that purely compute addition and multiplication of their inputs, which are idempotent, and which can be used without boxing inputs into instances of `Value`, making the code more transparent to the reader. The idempotence aspect is of great benefit, because it makes the code more digestible: whenever we add `3` to `5` we know the output will be `8`, whereas whenever we add `3` to the current state we only know that `Value` will increment its state by `3`.
+
+[source,javascript]
+----
+function add(current, value) {
+  return current + value
+}
+function multiply(current, value) {
+  return current * value
+}
+console.log(multiply(add(5, 3), 2)) // <- 16
+----
+
+Taking this concept beyond basic mathematics, we can begin to see how this decoupling of form and function, or state and logic, can be increasingly beneficial. It's easier to serialize plain data over the wire, keep it consistent across different environments, and make it interoperable regardless of the logic, than if we tightly coupled data and the logic around it.
+
+Functions are, to a certain degree, hopelessly coupled to the data they receive as inputs: in order for the function to work as expected, the data it receives must satisfy its contract for that piece of input. Within the bounds of a function's proper execution, the data must have a certain shape, traits, or adhere to whatever restrictions the function has in place. These restrictions may be somewhat lax (e.g "must have a `toString` method"), highly specific (e.g "must be a function that accepts 3 arguments and returns a decimal number between 0 and 1"), or anywhere in between. A simple interface is usually highly restrictive (e.g accepting only a boolean value). Meanwhile, it's not uncommon for loose interfaces to become burdened by their own flexibility, leading to complex implementations that attempt to accomodate many different shapes and sizes of the same input parameter.
+
+We should aim to keep logic restrictive and only as flexible as deemed necessary by business requirements. When an interface starts out being restrictive we can always slowly open it up later as new use cases and requirements arise, but by starting out with a small use case we're able to grow the interface into something that's naturally better fit to handle specific, real-world use cases.
+
+Data, on the other hand, should be transformed to fit elegant interfaces, rather than trying to fit the same data structure into every function. Doing so would result in frustration similar to how a rushed abstraction layer that doesn't lend itself to being effortlessly consumed to leverage the implementations underlying it. These transformations should be kept separate from the data itself, as to ensure reusability of each intermediate representation of the data on its own.
 
 ==== 4.4.2 Restricting Domain Logic
 
 .. We should strive to keep code that knows about a particular data structure or set of structures contained in as few modules as possible. Should the data structures or the logic around them require changes, the ripple effects of those changes can be devastating if domain logic is spread across the codebase.
+
+
+
 
 ==== 4.4.3 Choosing Data Over Code
 
