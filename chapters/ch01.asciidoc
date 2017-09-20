@@ -1,13 +1,30 @@
 [[module-thinking]]
 == Module Thinking
 
-# definitions like "what is a consumer, what is a component, interface, API touchpoint, etc."
-1.1 Introduction to Module Thinking
-1.2 Brief History of Modularity
-1.3 Benefits of Modular Design
-1.4 What Constitutes a Module?
-1.5 Why Modular JavaScript?
-1.6 Future of JavaScript
+..
+
+=== 1.1 Introduction to Module Thinking
+
+.. definitions like "what is a consumer, what is a component, interface, API touchpoint, etc."
+
+
+=== 1.2 Brief History of Modularity
+
+..
+
+=== 1.3 The Perks of Modular Design
+
+..
+
+=== 1.4 Modular Granularity
+
+.. [projects, applications, layers, modules, public interfaces, functions, branches, etc]
+
+=== 1.5 Why Modular JavaScript?
+
+..
+
+=== 1.6 Future of JavaScript
 
 # note on flexibility: "By being rigid in how its declarative module syntax works, ESM favors static analysis, once again at the expense of flexibility. Flexibility inevitably comes at the cost of added complexity, which is a good reason not to offer flexible interfaces."
 
