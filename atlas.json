@@ -1,5 +1,11 @@
 {
   "branch": "master",
+  "name": "bevacqua/mastering-modular-javascript",
+  "title": "Mastering Modular JavaScript",
+  "export_formats": [
+    "html",
+    "pdf"
+  ],
   "files": [
     "sections/cover.html",
     "chapters/ch01.asciidoc",
@@ -41,14 +47,6 @@
     }
   },
   "theme": "oreillymedia/animal_theme",
-  "title": "Mastering Modular JavaScript",
-  "name": "bevacqua/mastering-modular-javascript",
-  "branches": [
-    "master"
-  ],
-  "export_formats": [
-    "html"
-  ],
   "templating": false,
   "print_isbn13": "",
   "lang": "en",
