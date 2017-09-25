@@ -1,20 +1,161 @@
 [[module-thinking]]
 == Module Thinking
 
-..
+Even after the printing press was invented, publishing books remains a challenging endeavor. Yes, there's typically an author -- or authors -- who scribbled the content wherever and whenever they found time to do so. But there's also a content editor, tasked with helping the author transform their stream of conciousness into a relatable story that's not too dry to read, something to be especially careful about when it comes to technical or business books. We have the technical reviewers, watchful subject matter experts on the lookout for egregious mistakes in technical definitions or interpretations. And lastly, -- of course -- we have the content editor, the typo linters of prose and last bastion of proper grammar. Thus far, however, we've barely scratched the surface: everyone mentioned above is mostly interested in the contents of the book, but we don't do much else. There's also, as an example, the typesetters whose job is to ensure the book looks good when it goes to print -- bidding good riddance to orphans and widows, poorly-wrapped lines of code, and so much more. Someone has to design the cover, or to approve the table of contents for the first draft so that the author gets a contract. Several people oversee the process that culminates in the book going to press, -- usually referred to as production -- as well. Once copies are printed, they need to be distributed. Eventually, the book hits the shelves (physical or otherwise) and starts selling. Someone buys the book, and finally starts to read it. We could write entire books about the purchase transaction alone.
+
+The complexity of the whole process is mind-boggling, and yet, to each individual, it's not that complicated. The author, for example, merely has to write a few hundred words every day. Where did all that complexity go? There's a reason the process is so compartimentalized. We're not that good at handling high-level complexity, and breaking it down into single responsibilities such as "write content", "improve how prose flows", "review technical concerns", "fix grammar mistakes", "typeset for production", or "handle purchases" is what makes the process simpler for individuals working on the mammoth project that is writing a book or just about any business enterprise.
+
+Publishing is just an example, but we could do this exercise with just about anything. Pick an object on your desk, any object. Think how it got there. Now zoom out, think some more, how was it made? What is it made of? How many people were involved in manufacturing each piece, assembling it, perfecting it, and getting it to the store where it was bought? Is it a fruit? How many people were involved in planting it, fighting off pests, pruning plants, packaging the fruit, and getting it to the store where it was bought?
+
+Software is not all that different, except complexity is all around us. At the deepest zoom levels we find constraints defined by physical constants such as the speed of light, individual bits and hardware, interrupt calls, assembly language, and much more. Zooming out we find the megastructures of the technology sector, which handle everything from search queries to payment processing. Somewhere in the midst of all this complexity, there's us developers, and the projects bestowed upon us.
+
+We hardly stop to think about the complexity underlying everyday objects and interactions, since doing so would be paralyzing. Instead, we abstract solutions behind interfaces, so much that they _become_ -- in our minds -- the interface. Some of these interfaces map well to the abstracted implementation, and they feel great. Others don't map all that well to the implementation, and we end up feeling confused and frustrated. Software is not at all different. We don't want to think about the system as a whole, and virtually everything we work with sits behind interfaces that are simpler to use and understand than their underlying implementations.
+
+This already happens at the system level, and we hardly think about it. Let's discuss how we can apply the same concepts to the work we do, so that we can minimize the amount of complexity we need to stare at when working on a project, a feature, a piece of functionality, down to the branches of a single function.
 
 === 1.1 Introduction to Module Thinking
 
-.. definitions like "what is a consumer, what is a component, interface, API touchpoint, etc."
+Embracing module thinking is understanding that complexity is, ultimately, inescapable. At the same time, that complexity can be sweeped under an interface, hardly to ever be seen or thought of again. But, and here's one of the tricky parts, the interface needs to be well-designed so that its users don't become frustrated. That frustration could even lead us to peering under the hood and finding that the implementation is vastly more complex than the poor interface we're frustrated by, and maybe if the interface didn't exist in the first place, we'd be better off in terms of maintainability and readability.
 
+Systems can be organized granularly: we can split them into projects, made of multiple applications, containing several application-level layers, where we can have hundreds of modules, made up of thousands of functions, and so on. A granular approach helps us write code that's easy to understand and maintain, by attaining a reasonable degree of modularity, while preserving our sanity. In section 1.4, we'll discuss how we can best leverage this granularity to create modular applications.
 
-=== 1.2 Brief History of Modularity
+Whenever we delineate a component, there's going to be a public interface other parts of the system can leverage to access our component. The interface -- or API -- will be comprised of the set of methods or attributes that our component exposes, these methods or attributes can also be referred to as touchpoints, that is, the aspects of the interface that can be publicly interacted with. The fewer touchpoints an interface has, the smaller its surface area is, and the simpler the interface becomes. An interface with a large surface area is highly flexible, but it might also be a lot harder to understand and use, given the high amount of functionality exposed by the interface.
+
+This interface serves a dual purpose. It allows us to develop new bits and pieces of the component, only exposing functionality that's ready for public consumption while keeping private everything that's not meant to be shared with other components. At the same time, it allows consumers -- that is, components or systems that are leveraging our interface -- to reap the benefits of the functionality we expose without concerning themselves with the details of how we implemented that functionality.
+
+Robust, documented interfaces are one of the best ways of isolating a complicated piece of code so that others can consume its functionality without knowing any implementation details. A systematic arrangement of robust interfaces can be accrued to form a layer, -- such as service or data layers in enterprise applications -- and in doing so we might be able to largely isolate and circumscribe logic to one of those layers, while keeping presentational concerns separate from strictly business or persistance related concerns. Such a forceful separation is effective because it keeps individual components tidy and layers uniform. Uniform layers, comprised of components similar in pattern or shape, offer a sense of familiarity that makes them more straightforward to consume on a sustained basis from the point of view of a single developer, who over time becomes ever more used to familiar API shapes.
+
+Relying on consistent API shapes is a great way of increasing productivity, given the difficulty of coming up with adequate interface designs. When we consistently leverage similar API shapes, we don't have to come up with new designs every time, and consumers can rest assured that you haven't reinvented the wheel every time. We'll discuss API design at length over the coming chapters.
+
+=== 1.2 A Brief History of Modularity
+
+When it comes to JavaScript, modularity is a modern concept. In this section we'll quickly revisit and summarize the milestones in how modularity evolved in the world of JavaScript.
+
+==== 1.2.1 Script Tags and Closures
+
+In the early days, JavaScript was inlined in HTML `<script>` tags. At best, it was offloaded to dedicated script files, all of which shared a global scope.
+
+Any variables declared in one of these files or inline scripts would be imprinted on the global `window` object, creating leaks across entirely unrelated scripts that might've lead to conflicts or even broken experiences, where a variable in one script might inadvertently replace a global that another script was relying on.
+
+Eventually, as web applications started growing in size and complexity, the concept of scoping and the dangers of a global scope became evident and more well-known. Immediately-invoking function expressions (IIFE) were invented and became an instant mainstay. An IIFE worked by wrapping an entire file or portions of a file in a function that executed immediately after evaluation. Each function in JavaScript creates a new level of scoping, meaning `var` variable bindings would be contained by the IIFE. Even though variable declarations are hoisted to the top of their containing scope, they'd never become implicit globals, thanks to the IIFE wrapper, thus suppressing the brittleness of implicit JavaScript globals.
+
+Several flavors of IIFE can be found in the next example snippet. The code in each IIFE is isolated and can only escape onto the global context via explicit statements such as `window.fromIIFE = true`.
+
+[source,javascript]
+----
+(function() {
+  console.log('IIFE using parenthesis')
+})()
+
+~function() {
+  console.log('IIFE using a bitwise operator')
+}()
+
+void function() {
+  console.log('IIFE using the void operator')
+}()
+----
+
+Using the IIFE pattern, libraries would typically create modules by exposing and then reusing a single binding on the `window` object, thus avoiding global namespace pollution. The next snippet shows how we might create a `mathlib` component with a `sum` method in one of these IIFE-based libraries. If we wanted to add more modules to `mathlib`, we could place each of them in a separate IIFE which adds its own methods to the `mathlib` public interface, while anything else could stay private to the component that defined the new portion of functionality.
+
+[source,javascript]
+----
+void function() {
+  window.mathlib = window.mathlib || {}
+  window.mathlib.sum = sum
+
+  function sum(...values) {
+    return values.reduce((a, b) => a + b, 0)
+  }
+}()
+
+mathlib.sum(1, 2, 3)
+// <- 6
+----
+
+This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers -- for the first time -- to safely concatenate every IIFE module into a single file, reducing the strain on the network.
+
+The problem in the IIFE approach was that there wasn't an explicitly dependency tree. This means developers had to manufacture component file lists in a precise order, so that dependencies would load before any modules that dependend on them did -- recursively.
+
+==== 1.2.2 RequireJS, AngularJS, and Dependency Injection
+
+This is a problem we've hardly had to think about ever since the advent of module systems like RequireJS or the dependency injection mechanism in AngularJS, both of which allowed us to explicitly name the dependencies of each module.
+
+The following example shows we might define the `mathlib/sum.js` library using RequireJS's `define` function, which was added to the global scope. The returned value from the `define` callback is then used as the public interface for our module.
+
+[source,javascript]
+----
+define(function() {
+  return sum
+
+  function sum(...values) {
+    return values.reduce((a, b) => a + b, 0)
+  }
+})
+----
+
+We could then have a `mathlib.js` module which aggregates all functionality we wanted to include in our library. In our case, it's just `mathlib/sum`, but we could list as many dependencies as we wanted in the same way. We'd list each dependency using their paths in an array, and we'd get their public interfaces as parameters passed into our callback, in the same order.
+
+[source,javascript]
+----
+define(['mathlib/sum'], function(sum) {
+  return { sum }
+})
+----
+
+Now that we've defined a library, we can consume it using `require`. Notice how the dependency chain is resolved for us in the snippet below.
+
+[source,javascript]
+----
+require(['mathlib'], function(mathlib) {
+  mathlib.sum(1, 2, 3)
+  // <- 6
+})
+----
+
+This is the upside in RequireJS and its inherent dependency tree. Regardless of whether our application contained a hundred or thousands of modules, RequireJS would resolve the dependency tree without the need for a carefully maintained list. Given we've listed dependencies exactly where they were needed, we've eliminated the necessity for a long list of every component and how they're related to one another, as well as the error-prone process of maintaining such a list. Eliminating such a large source of complexity is merely a side-effect, but not the main benefit.
+
+This explicitness in dependency declaration, at a module level, made it obvious how a component was related to other parts of the application. That explicitness in turn fostered a greater degree of modularity, something that was ineffective before because of how hard it was to follow dependency chains.
+
+RequireJS wasn't without problems. The entire pattern revolved around its ability to asynchronously load modules, which was ill-advised for production deployments due to how poorly it performed. Using the asynchronous loading mechanism, you issued hundreds of networks requests in a waterfall fashion before much of your code was executed. A different tool would have to be used to optimize builds for production. Then there was the verbosity factor, where you'd end up with long lists of dependencies, a RequireJS function call, and the callback for your module. On that note, there were quite a few different RequireJS functions and several ways of invoking those functions, complicating its use. The API wasn't the most intuitive, because there were so many ways of doing the same thing: declaring a module with dependencies.
+
+The dependency injection system in AngularJS suffered from many of the same problems. It was an elegant solution at the time, relying on clever string parsing to avoid the dependency array, using function parameter names to resolve dependencies instead. This mechanism was incompatible with minifiers, which would rename parameters to single characters and thus break the injector.
+
+Later in the lifetime of AngularJS v1, a build task was introduced that would transform code like the following:
+
+[source,javascript]
+----
+module.factory('calculator', function(mathlib) {
+  // …
+})
+----
+
+Into the format in the following bit of code, which was minification-safe because it included the explicit dependency list.
+
+[source,javascript]
+----
+module.factory('calculator', ['mathlib', function(mathlib) {
+  // …
+}])
+----
+
+Needless to say, the delay in introducing this little-known build tool, combined with the over-engineered aspect of having an extra build step to unbreak something that shouldn't have been broken, discouraged the use of a pattern that carried such a negligible benefit anyway. Developers mostly chose to stick with the familiar RequireJS-like hardcoded dependency array format.
+
+==== 1.2.3 Node.js and the Advent of CommonJS
+
+..
+
+==== 1.2.4 ES6, `import`, and Babel
 
 ..
 
 === 1.3 The Perks of Modular Design
 
 ..
+
+# note on flexibility: "By being rigid in how its declarative module syntax works, ESM favors static analysis, once again at the expense of flexibility. Flexibility inevitably comes at the cost of added complexity, which is a good reason not to offer flexible interfaces."
+
+# note on maintainable: "**Always consider a future maintainer of your code!** If it was you, coming back after 5 years, would you resent yourself for writing code that can't be grokked on the first visual pass? Then don't write it that way and prefer having to spend a few extra keystrokes today."
 
 === 1.4 Modular Granularity
 
@@ -26,6 +167,4 @@
 
 === 1.6 Future of JavaScript
 
-# note on flexibility: "By being rigid in how its declarative module syntax works, ESM favors static analysis, once again at the expense of flexibility. Flexibility inevitably comes at the cost of added complexity, which is a good reason not to offer flexible interfaces."
-
-# note on maintainable: "**Always consider a future maintainer of your code!** If it was you, coming back after 5 years, would you resent yourself for writing code that can't be grokked on the first visual pass? Then don't write it that way and prefer having to spend a few extra keystrokes today."
+..
