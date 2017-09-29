@@ -73,7 +73,7 @@ mathlib.sum(1, 2, 3)
 // <- 6
 ----
 
-This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers -- for the first time -- to safely concatenate every IIFE module into a single file, reducing the strain on the network.
+This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers to -- for the first time -- safely concatenate every IIFE module into a single file, reducing the strain on the network.
 
 The problem in the IIFE approach was that there wasn't an explicitly dependency tree. This means developers had to manufacture component file lists in a precise order, so that dependencies would load before any modules that dependend on them did -- recursively.
 
@@ -152,7 +152,7 @@ const mathlib = require('./mathlib')
 
 Much like RequireJS and AngularJS, CommonJS dependencies are also referred to by a pathname. The main difference is that the boilerplate function and dependency array are now both gone, and the interface from a module could be assigned to a variable binding, or used anywhere a JavaScript expression could be used.
 
-Unlike RequireJS or AngularJS, CommonJS was rather strict. In RequireJS and AngularJS you could have many dynamically-defined modules per file, whereas CommonJS had a one-to-one mapping between files and modules. At the same time, RequireJS had several ways of declaring a module and AngularJS had several kinds of factories, services, providers and so on -- besides the fact that its dependency injection mechanism was tightly coupled to the AngularJS framework itself. CommonJS, in contrast, had a single way of declaring modules. Any JavaScript file was a module, calling `require` would load dependencies, and anything assied to `module.exports` was its interface. This enabled better tooling and code introspection -- making it easier for tools to learn the hierarchy of a CommonJS component system.
+Unlike RequireJS or AngularJS, CommonJS was rather strict. In RequireJS and AngularJS you could have many dynamically-defined modules per file, whereas CommonJS had a one-to-one mapping between files and modules. At the same time, RequireJS had several ways of declaring a module and AngularJS had several kinds of factories, services, providers and so on -- besides the fact that its dependency injection mechanism was tightly coupled to the AngularJS framework itself. CommonJS, in contrast, had a single way of declaring modules. Any JavaScript file was a module, calling `require` would load dependencies, and anything assigned to `module.exports` was its interface. This enabled better tooling and code introspection -- making it easier for tools to learn the hierarchy of a CommonJS component system.
 
 Eventually, Browserify was invented as way of bridging the gap between CommonJS modules for Node.js servers and the browser. Using the `browserify` command-line interface program and providing it with the path to an entry point module, one could combine an unthinkable amount of modules into a single browser-ready bundle. The killer feature of CommonJS, the npm package registry, was decisive in aiding its takeover of the module loading ecosystem.
 
@@ -182,11 +182,17 @@ Given how ESM is native to the language, -- as opposed to CJS -- it can be expec
 
 === 1.3 The Perks of Modular Design
 
-..
+We've already addressed the fact that modularity, as opposed to a single shared global scope, helps avoid unexpected clashes in variable names thanks to the diversification of scoping across modules. Beyond a fix for clashes, modularity spread across files limits the amount of complexity we have to pay attention to when working on any one particular feature. In doing so, our team will be able to focus on the task at hand and be more productive as a result.
 
-# note on flexibility: "By being rigid in how its declarative module syntax works, ESM favors static analysis, once again at the expense of flexibility. Flexibility inevitably comes at the cost of added complexity, which is a good reason not to offer flexible interfaces."
+Maintainability, or the ability to effect change in the codebase, also improves significantly because of this. When code is simple and modular, it's easier to build upon and extend. Maintainability is valuable regardless of team size: even in a team of one, if we leave a piece of code untouched for a few months and then come back to it, it might be hard to improve upon or even understand if we didn't consider writing maintainable code the first time around.
 
-# note on maintainable: "**Always consider a future maintainer of your code!** If it was you, coming back after 5 years, would you resent yourself for writing code that can't be grokked on the first visual pass? Then don't write it that way and prefer having to spend a few extra keystrokes today."
+Modular code is meant to be highly maintainable by default. By keeping pieces of code simple and following the Single Responsibility Priciple (SRP), whereby it only aims to fulfill one goal, and combining these simple pieces of code into more sophisticated components, we're able to compose our way to larger components, and eventually an entire application. When each piece of code in a program is modular, the codebase appears to be simple when we're looking at individual components, yet on the whole it is able to exhibit complex behaviors, just like the book publishing process we've discussed in the beginning of this chapter.
+
+Components in modular applications are defined by their interfaces. The implementation of those components is not their essence, but their interfaces is. When interfaces are well-designed, they can be grown in non-breaking ways, augmenting the amount of use cases they can satisfy, without compromising existing usage. When we have a mindfully designed interface, the implementation behind that interface becomes easy to tweak or swap entirely. Strong interfaces are effective at hiding away weak implementations, that can be later refactored into more robust implementations provided the interface holds. Strong interfaces are also excellent for unit testing, because we won't have to worry about the implementation and we can test the interface, -- the inputs and outputs of a component or function -- if the interface is well-tested plus robust, we can surely consider its implementation in a secondary plane.
+
+Given those implementations are secondary to the foremost requirement of having intuitive interfaces, that aren't coupled to their implementations, we can concern ourselves with the tradeoff between flexibility and simplicity. Flexibility inevitably comes at the cost of added complexity, which is a good reason not to offer flexible interfaces. At the same time, flexibility is often a necessity, and thus we need to strike the right balance by deciding how much rigidity we can get away with in our interfaces. This balance would mean an interface appeases its consumers thanks to its ease of use, but that it also enables advanced or more uncommon use cases when needed, without too much of a detrimental effect on the ease of use or at the cost of greatly enhanced implementation complexity.
+
+We'll discuss the tradeoffs between flexibility, simplicity, composability, and the right amount of future-proofing in the following couple of chapters.
 
 === 1.4 Modular Granularity
 
