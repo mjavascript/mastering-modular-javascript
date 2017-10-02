@@ -1,9 +1,93 @@
-5 Modular Patterns and Practices
-# discuss role of latest language features, spread, how they can make code more maintainable, async/await, promises, etc
-5.1 Revealing Module
-5.2 Object Factory
-5.3 Composition Over Inheritance
-5.4 Events
-5.5 Conventions
+[[modular-patterns-and-practices]]
+== Modular Patterns and Practices
 
-# Mapping, Filtering, Sorting, and Reducing Data?
+..
+
+=== 5.1 Leveraging Modern JavaScript
+
+# discuss role of latest language features, spread, how they can make code more maintainable, async/await, promises, etc
+
+==== 5.1.1 Destructuring, Rest, Spread, and Template Literals
+
+.. how each of these features helps us keep code simpler, or how to simplify existing code using them.
+
+==== 5.1.2 Striving for simple `const` bindings
+
+.. thinking about how `let` and `var` may mean we're doing complicated things, and how striving to avoid those bindings almost always leads to better/simpler code.
+
+==== 5.1.3 Asynchronous Functions and Promises
+
+.. why converting flows to promises may be a good way of simplifying it, on the basis that a lot of the language now is built around support for promises
+
+=== 5.2 Composition and Inheritance
+
+..
+
+==== 5.2.1 Aspects and Decorators
+
+how we can decorate components either via composition or decorators to add features to them, and reuse that logic for other kinds of components..
+
+==== 5.2.2 The Perks of Inheritance
+
+.. how inheritance can be useful when there's an abstract interface to implement and methods to override, thinking of React's Component in terms of `render()` being an abstract method to be implemented and pretty much every other method being a virtual method [in C# terms], explains benefits of these kinds of contracts. maybe hint at 5.5.2 protocols
+
+==== 5.2.3 Choosing between Composition and Inheritance
+
+in real apps you'll seldom have to use inheritance except when connecting to specific frameworks you depend on, or for specific patterns, everywhere else probably use composition [ellaborate on that]
+
+==== 5.3 Code Patterns
+
+..
+
+==== 5.3.1 Revealing Module
+
+.. this one is sort-of obvious but explain how hiding most of a class in a function can help avoid unwarranted access
+
+==== 5.3.2 Object Factories
+
+.. and how they're great for keeping state contained to the instance
+
+==== 5.3.3 Event Emission
+
+.. events for things that we want to have clearly-delineated side-effects.
+
+==== 5.3.4 Message Passing
+
+.. situations like SW, normal workers, extensions, frames.
+
+=== 5.4 Data manipulation use cases
+
+.. tips and tricks to consider when working with data. not isolated methods but instead use cases.
+.. Mapping data
+Filtering through data
+When should we `Array#reduce`?
+
+==== 5.4.1 Filtering and mapping data
+
+.. chat about filtering and mapping, how iterators can help create a pipeline, but how tools like `lodash` also do this when we use the wrapper style, and how this shouldn't be a topmost concern of ours
+
+==== 5.4.2 Reducing lists into as hash-maps
+
+.. (and other use cases for reduce)
+
+==== 5.4.3 The caveats of `Array#reduce`
+
+.. it's not used often, but when it's used, it's quite often for the wrong reasons. explain why it can be very complex to understand if the use case isn't correct
+
+=== 5.5 Conventions and Protocols
+
+..
+
+==== 5.5.1 Enforcing User-Defined Contracts
+
+.. coming up with own conventions, what/why and how to enforce it. probably talk of Symbol
+
+==== 5.5.2 JavaScript Protocols
+
+[aka interface]
+
+.. the proposal: https://github.com/michaelficarra/proposal-first-class-protocols
+
+==== 5.5.3 Conventions at a Large Scale
+
+.. talk about conventions such as MVC, React's view rendering mechanism, or other large-scale conventions we adopt and seldom think about etc
