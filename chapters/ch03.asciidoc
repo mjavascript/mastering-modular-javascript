@@ -1,7 +1,7 @@
 [[module-design]]
 == Module Design
 
-Having established a few fundamentals of module thinking and interface design principles, it's time for us to shift our attention to module internals and implementation concerns. Thinking in terms of API-driven and documentation-driven design will yield more usable modules than not doing so. You might argue that internals are not that important: "as long as the interface holds, we can put anything we want in the mix!". A usable interface is only one side of the equation, but it will do little to keep the maintainability of your applications in check. Properly designed module internals help keep our code readable and its intent clear.
+Thinking in terms of API-driven and documentation-driven design will yield more usable modules than not doing so. You might argue that internals are not that important: "as long as the interface holds, we can put anything we want in the mix!". A usable interface is only one side of the equation, but it will do little to keep the maintainability of your applications in check. Properly designed module internals help keep our code readable and its intent clear. In this chapter we'll debate what it takes to write modules with scalability in mind, but without getting too far ahead of our current requirements. We'll discuss the CRUST constraints in some more depth, and finally ellaborate on how to prune modules as they become larger and more complex over time.
 
 === 3.1 Growing a Module
 
@@ -9,7 +9,7 @@ Small, single-purpose functions are the lifeblood of clean module design. Purpos
 
 Suppose that instead of implementing a single function with 100 lines of code we break it up into 3 or more smaller functions. We might later be able to reuse one of those smaller functions somewhere else in our module, or it might prove a useful addition to its public interface.
 
-In this chapter we'll discuss design considerations aimed at reducing complexity at the module level. While most of the concerns we'll discuss here have an effect on the way we write functions, it is in the next chapter where we'll be devoting our time to the art of writing less complex functions.
+In this chapter we'll discuss design considerations aimed at reducing complexity at the module level. While most of the concerns we'll discuss here have an effect on the way we write functions, it is in the next chapter where we'll be specifically devoting our time to the development of simple functions.
 
 ==== 3.1.1 Composability and Scalability
 
@@ -203,6 +203,6 @@ However convincing an eloquent piece of advice or tool might seem, always apply 
 
 Whenever you're analyzing whether a dependency, tool, or piece of advice fits your needs, always start by reading what there is to be read and consider whether the problem being solved is one you indeed need to solve. Avoid falling in the trap of leveraging advice or tools merely because it became popular or is being hailed by a large actor.
 
-Never overcommit to that which you're not certain fits your needs, but always experiment. It is by keeping an open mind that we can capture new knowledge, improve our understanding of the world, and innovate. This is aided by critical thinking and hindered by rushing to the newest technology without firsthand experimentation.
+Never overcommit to that which you're not certain fits your needs, but always experiment. It is by keeping an open mind that we can capture new knowledge, improve our understanding of the world, and innovate. This is aided by critical thinking and hindered by rushing to the newest technology without firsthand experimentation. In any case, rules are meant to be bent, and broken.
 
-In any case, rules are meant to be bent, and broken.
+Let's move into the next chapter, where we'll decypher the art of writing less complex functions.

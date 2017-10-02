@@ -1,6 +1,8 @@
 [[modularity-principles]]
 == Modularity Principles
 
+Modularity can be the answer to complexity, but what exactly do we mean when we're talking about complexity?
+
 Complexity is a loaded term for a nuanced topic. What does complex mean? A dictionary defines complexfootnoteref:[define-complex,The dictionary definition might help shed a light on this topic: https://mjavascript.com/out/complex.] as something that's "composed of many interconnected parts", but that's not the problem we generally refer to when we speak of complexity in the context of programming: a program may have hundreds or thousands of files and still be considered relatively simple.
 
 The next two definitions, offered by that same dictionary, might be more revealing in the context of program design.
@@ -155,6 +157,8 @@ export default function send (options, done) {
   send({ to, subject, html }, done)
 }
 ----
+
+We've been discussing API design in terms of responsibility, but something equally interesting is that we've hardly worried about the implementation of those interfaces. Is there merit to designing an interface before digging into its implementation?
 
 ==== 2.1.2 API First
 
@@ -474,7 +478,7 @@ In another example, we could implement a Markdown compiler function with a defau
 
 Going back to `fetch`, note how little configuration or implementation-specific knowledge we need for the simplest case. This hardly changes when we need to choose the HTTP method, since we just need to add an option. Well designed interfaces have a habit of making it appear effortless for consumers to use the API for its simplest use case, and have them spend a little more effort for slightly more complicated use cases. As the use case becomes more complicated, so does the way in which the interface needs to be bent. This is because we're taking the interface to the limit, but it goes to show how much work can be put into keeping an interface simple by optimizing for common use cases.
 
-==== 2.2.5 Smallest possible surface area
+==== 2.2.5 Tiny surface areas
 
 Any interface benefits from being its smallest possible self. A small surface area means fewer test cases that could fail, fewer bugs that may arise, fewer ways in which consumers might abuse the interface, less documentation, and more ease of use since there's less to choose from.
 
@@ -483,3 +487,5 @@ The malleability of an interface depends on the way it is consumed. Functions an
 Not all changes are breaking changes, however. We might learn from an interface like the one in `fetch`, for example, which remains highly malleable even in the face of change. Even though the interface is tiny for it's simplest use case, -- `GET /resource` -- the `options` parameter can grow by leaps and bounds without causing trouble for consumers, while extending the capabilities of `fetch`.
 
 We can avoid creating interfaces that contain several slightly different solutions for similar problems by holistically designing the interface to solve the underlying common denominator, maximizing the reusability of a component's internals in the process.
+
+Having established a few fundamentals of module thinking and interface design principles, it's time for us to shift our attention to module internals and implementation concerns.
