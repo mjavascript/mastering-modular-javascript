@@ -1,21 +1,64 @@
 [[modular-patterns-and-practices]]
 == Modular Patterns and Practices
 
-..
+In this chapter we'll take a look at some of the latest language features and how we can leverage those in our programs while reducing complexity in the process. We'll also analyze concrete coding patterns and conventions that can help us develop simple alternatives to otherwise complex problems.
 
 === 5.1 Leveraging Modern JavaScript
 
-# discuss role of latest language features, spread, how they can make code more maintainable, async/await, promises, etc
+When used conscientiously, the latest JavaScript features can be of great help in reducing the amount of code whose sole purpose is to work around language limitations, increasing signal -- the amount of valuable information that can be extracted from reading a piece of code -- while eliminating boilerplate and repetition.
 
-==== 5.1.1 Destructuring, Rest, Spread, and Template Literals
+==== 5.1.1 Template Literals
+
+Before ES6, the JavaScript community came up with half a dozen ways of arriving at multi-line strings: from strings chained with `\` escape characters or `+` arithmetic operators, to using `Array#join`, or resorting to the string representation of comments in a function -- all merely for multi-line support.
+
+Further, inserting variables into a string isn't possible, but that's easily circumvented by concatenating them with one or more strings.
+
+[source,javascript]
+----
+'Hello ' + name + ', I\'m Nicolás!'
+----
+
+Template literals arrived in ES6 and resolve multi-line strings in a feature that was native to the language, without the need for any clever hacks in user-space.
+
+Unlike strings, with template literals we can interpolate expressions using a streamlined syntax. They involve less escaping, too, thanks to using backticks instead of single or double quotation marks, which appear more frequently in English text.
+
+[source,javascript]
+----
+`Hello ${ name }, I'm Nicolás!`
+----
+
+Besides these improvements, template literals also offer the possibility of tagged templates. You can prefix the template with a custom function that transforms the template's output use cases like input sanitization, formatting, or anything else.
+
+Whenever we need to compose a string using data, template literals are a terse alternative to string concatenation. When we want to avoid escaping single or double quotes, template literals can help. The same is true when we want to write multi-line strings.
+
+In every other case -- when there's no interpolation, escaping, or multi-line needs -- the choice comes down to a mere matter of style. In the last chapter of Practical Modern JavaScript, "Practical Considerations", I advocatedfootnoteref:[template-literals,You can read a blog post I wrote about why template literals are better than strings at: https://mjavascript.com/out/template-literals. Practical Modern JavaScript (O'Reilly, 2017) is the first book in the Modular JavaScript series. You're currently reading the second book of the same series.] in favor of using template literals in every case. This was for a few factors, but here's the two most important ones: because of convenience, so that you don't have to convert a string back and forth between single quoted string and template literals depending on its contents; and because of consistency, so that you don't have to stop and think about which kind of quotation mark -- single, double, or backtick -- to use each time. Template literals may take some time to get accustomed to: we've used single quoted strings for a long time, and template literals have only been around for a while. You or your team might prefer sticking with single quoted strings, and that's perfectly fine too.
+
+[NOTE]
+====
+When it comes to style choices, you'll rarely face problems if you let your team come to a consensus about the preferred style choice and later enforce that choice by way of a lint tool like ESLint. It's entirely valid ot stick with single quoted strings and only use template literals when deemed absolutely necessary, if that's what most of the team prefers.
+
+Using a tool like ESLint and a continuous integration job to enforce its rules means nobody has to perform the time consuming job of keeping everyone in line with the house style. When tooling enforces style choices, discussions about those choices won't crop up as often in discussion threads while contributors are collaborating on units of work.
+====
+
+It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity.
+
+==== 5.1.2 Destructuring, Rest, and Spread
+
+
+
 
 .. how each of these features helps us keep code simpler, or how to simplify existing code using them.
 
-==== 5.1.2 Striving for simple `const` bindings
+
+
+
+
+
+==== 5.1.3 Striving for simple `const` bindings
 
 .. thinking about how `let` and `var` may mean we're doing complicated things, and how striving to avoid those bindings almost always leads to better/simpler code.
 
-==== 5.1.3 Asynchronous Functions and Promises
+==== 5.1.4 Asynchronous Functions and Promises
 
 .. why converting flows to promises may be a good way of simplifying it, on the basis that a lot of the language now is built around support for promises
 
@@ -35,7 +78,7 @@ how we can decorate components either via composition or decorators to add featu
 
 in real apps you'll seldom have to use inheritance except when connecting to specific frameworks you depend on, or for specific patterns, everywhere else probably use composition [ellaborate on that]
 
-==== 5.3 Code Patterns
+=== 5.3 Code Patterns
 
 ..
 
