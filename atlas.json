@@ -8,6 +8,10 @@
   ],
   "files": [
     "sections/cover.html",
+    "cover.html",
+    "titlepage.html",
+    "copyright.html",
+    "toc.html",
     "chapters/ch01.asciidoc",
     "chapters/ch02.asciidoc",
     "chapters/ch03.asciidoc",
