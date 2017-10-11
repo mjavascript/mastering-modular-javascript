@@ -1,11 +1,5 @@
 {
   "branch": "master",
-  "name": "bevacqua/mastering-modular-javascript",
-  "title": "Mastering Modular JavaScript",
-  "export_formats": [
-    "html",
-    "pdf"
-  ],
   "files": [
     "sections/cover.html",
     "sections/cover.html",
@@ -25,7 +19,7 @@
       "syntaxhighlighting": true,
       "show_comments": false,
       "color_count": false,
-      "trim_size": "7inx9.1875in"
+      "trim_size": "6inx9in"
     },
     "epub": {
       "toc": true,
@@ -51,6 +45,12 @@
     }
   },
   "theme": "oreillymedia/animal_theme",
+  "title": "Mastering Modular JavaScript",
+  "name": "bevacqua/mastering-modular-javascript",
+  "export_formats": [
+    "html",
+    "pdf"
+  ],
   "templating": false,
   "print_isbn13": "",
   "lang": "en",
