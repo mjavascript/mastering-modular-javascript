@@ -75,7 +75,7 @@ mathlib.sum(1, 2, 3)
 
 This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers to -- for the first time -- safely concatenate every IIFE module into a single file, reducing the strain on the network.
 
-The problem in the IIFE approach was that there wasn't an explicitly dependency tree. This means developers had to manufacture component file lists in a precise order, so that dependencies would load before any modules that dependend on them did -- recursively.
+The problem in the IIFE approach was that there wasn't an explicit dependency tree. This means developers had to manufacture component file lists in a precise order, so that dependencies would load before any modules that dependend on them did -- recursively.
 
 ==== 1.2.2 RequireJS, AngularJS, and Dependency Injection
 
