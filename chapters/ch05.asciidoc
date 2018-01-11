@@ -40,25 +40,118 @@ When it comes to style choices, you'll rarely face problems if you let your team
 Using a tool like ESLint and a continuous integration job to enforce its rules means nobody has to perform the time consuming job of keeping everyone in line with the house style. When tooling enforces style choices, discussions about those choices won't crop up as often in discussion threads while contributors are collaborating on units of work.
 ====
 
-It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity.
+It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity. While the former may make a codebase subjectively easier to read, or aesthetically pleasing, it is only through deliberate action that we'll keep complexity in check. Granted, a consistent style throughout a codebase can help contain complexity, but the exact style is unimportant as long as we enforce it consistently.
 
 ==== 5.1.2 Destructuring, Rest, and Spread
 
+The destructuring, rest and spread features came into effect in ES6. These features accomplish a number of different things, which we'll now discuss.
 
+Destructuring helps us indicate the fields of an object that we'll be using to compute the output of a function. In the following example, we destructure a few properties from a `ticker` variable, and then combine that with a `...details` rest pattern containing every property of `ticker` that we haven't explicitly named in our destructuring pattern.
 
+[source,javascript]
+----
+const { low, high, ask, ...details } = ticker
+----
 
-.. how each of these features helps us keep code simpler, or how to simplify existing code using them.
+When we use destructuring methodically and near the top of our functions, or -- even better -- in the parameter list, we are making it obvious what the exact contract of our function is in terms of inputs.
 
+Deep destructuring offers the ability to take this one step further, digging as deep as necessary into the structure of the object we're accessing. Consider the following example, where we destructure the JSON response body with details about an apartment. When we have a destructuring statement like this near the top of a function that's used to render a view, the aspects of the apartment listing are needed to render it become self-evident at a glance. In addition, we avoid repetition when accessing property chains like `response.contact.name` or `response.contact.phone`.
 
+[source,javascript]
+----
+const {
+  title,
+  description,
+  askingPrice,
+  features: {
+    area,
+    bathrooms,
+    bedrooms,
+    amenities
+  },
+  contact: {
+    name,
+    phone,
+    email
+  }
+} = response
+----
 
+One contention point might be that, at times, the deeply destructured property name doesn't make sense outside of its context. For instance, we've introduce `name` to our scope, but it's the name of the contact for the listing, not to be confused with the name of the listing itself. In these cases, the alternative may be to give `response.contact.name` an alias whereby we add the parent property as a prefix, so that we're left with `name: contactName`.
 
+Object spread helps us create a shallow copy of an object using a little native syntax. We can also combine object spread with our own properties, so that we create a copy that also overwrites the values in the original object we're spreading.
 
+[source,javascript]
+----
+const faxCopy = { ...fax }
+const newCopy = { ...fax, date: new Date() }
+----
+
+This allows us to create slightly modified shallow copies of other objects. When dealing with discrete state management, this means we don't need to resort to `Object.assign` method calls or utility libraries. While there's nothing inherently wrong with `Object.assign` calls, the object spread `...` abstraction is easier for us to internalize and mentally map its meaning back to `Object.assign` without us realizing it, and so the code becomes easier to read because we're dealing with less unabstracted knowledge.
 
 ==== 5.1.3 Striving for simple `const` bindings
 
-.. thinking about how `let` and `var` may mean we're doing complicated things, and how striving to avoid those bindings almost always leads to better/simpler code.
+If we use `const` by default, then the need to use `let` or `var` can be ascribed to code that's more complicated than it should be. Striving to avoid those kinds of bindings almost always leads to better and simpler code.
+
+In section 4.2.4 we've looked into the case where a `let` binding is assigned a default value, and have conditional statements immediately after, that might change the contents of the variable binding.
+
+[source,javascript]
+----
+// …
+let type = 'contributor'
+if (user.administrator) {
+  type = 'administrator'
+} else if (user.roles.includes('edit_articles')) {
+  type = 'editor'
+}
+// …
+----
+
+Most reasons why we may need to use `let` or `var` bindings are variants of the above and can be resolved by extracting the assignments into a function where the returned value is then assigned to a `const` binding. This moves the complexity out of the way, and eliminates the need for looking ahead to see if the binding is reassigned at some point in the code flow later on.
+
+[source,javascript]
+----
+// …
+const type = getUserType(user)
+// …
+
+function getUserType(user) {
+  if (user.administrator) {
+    return 'administrator'
+  }
+  if (user.roles.includes('edit_articles')) {
+    return 'editor'
+  }
+  return 'contributor'
+}
+----
+
+A variation of this problem is when we repeatedly assign the result of an operation to the same binding, in order to split it into several lines.
+
+[source,javascript]
+----
+let values = [1, 2, 3, 4, 5]
+values = values.map(value => value * 2)
+values = values.filter(value => value > 5)
+// <- [6, 8, 10]
+----
+
+A better approach would be to create new bindings every time, computing their values based on the previous binding, and picking up the benefits of using `const` in doing so -- where we can rest assured that the binding doesn't change later in the flow.
+
+[source,javascript]
+----
+const initialValues = [1, 2, 3, 4, 5]
+const doubledValues = initialValues.map(value => value * 2)
+const finalValues = doubledValues.filter(value => value > 5)
+// <- [6, 8, 10]
+----
+
+Let's move onto a more interesting topic: asynchronous code flows.
 
 ==== 5.1.4 Asynchronous Functions and Promises
+
+
+
 
 .. why converting flows to promises may be a good way of simplifying it, on the basis that a lot of the language now is built around support for promises
 
