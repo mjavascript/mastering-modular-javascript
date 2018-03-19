@@ -5,7 +5,7 @@ In this chapter we'll take a look at some of the latest language features and ho
 
 === 5.1 Leveraging Modern JavaScript
 
-When used conscientiously, the latest JavaScript features can be of great help in reducing the amount of code whose sole purpose is to work around language limitations, increasing signal -- the amount of valuable information that can be extracted from reading a piece of code -- while eliminating boilerplate and repetition.
+When used judiciously, the latest JavaScript features can be of great help in reducing the amount of code whose sole purpose is to work around language limitations. This increases signal -- the amount of valuable information that can be extracted from reading a piece of code -- while eliminating boilerplate and repetition.
 
 ==== 5.1.1 Template Literals
 
@@ -77,7 +77,7 @@ const {
 } = response
 ----
 
-One contention point might be that, at times, the deeply destructured property name doesn't make sense outside of its context. For instance, we've introduce `name` to our scope, but it's the name of the contact for the listing, not to be confused with the name of the listing itself. In these cases, the alternative may be to give `response.contact.name` an alias whereby we add the parent property as a prefix, so that we're left with `name: contactName`.
+One contention point might be that, at times, the deeply destructured property name doesn't make sense outside of its context. For instance, we've introduce `name` to our scope, but it's the name of the contact for the listing, not to be confused with the name of the listing itself. In these cases, the alternative may be to give `response.contact.name` an alias where we add the parent property name as a prefix, so that we're left with a binding named `contactName` or `responseContactName`.
 
 Object spread helps us create a shallow copy of an object using a little native syntax. We can also combine object spread with our own properties, so that we create a copy that also overwrites the values in the original object we're spreading.
 
@@ -93,7 +93,7 @@ This allows us to create slightly modified shallow copies of other objects. When
 
 If we use `const` by default, then the need to use `let` or `var` can be ascribed to code that's more complicated than it should be. Striving to avoid those kinds of bindings almost always leads to better and simpler code.
 
-In section 4.2.4 we've looked into the case where a `let` binding is assigned a default value, and have conditional statements immediately after, that might change the contents of the variable binding.
+In section 4.2.4 we looked into the case where a `let` binding is assigned a default value, and have conditional statements immediately after, that might change the contents of the variable binding.
 
 [source,javascript]
 ----
@@ -126,7 +126,7 @@ function getUserType(user) {
 }
 ----
 
-A variation of this problem is when we repeatedly assign the result of an operation to the same binding, in order to split it into several lines.
+A variant of this problem is when we repeatedly assign the result of an operation to the same binding, in order to split it into several lines.
 
 [source,javascript]
 ----
@@ -148,24 +148,100 @@ const finalValues = doubledValues.filter(value => value > 5)
 
 Let's move onto a more interesting topic: asynchronous code flows.
 
-==== 5.1.4 Asynchronous Functions and Promises
+==== 5.1.4 Navigating Callbacks, Promises, and Asynchronous Functions
 
+JavaScript now offers several options when it comes to describing asynchronous algorithms: the plain callback pattern, promises, async functions, async iterators, async generators, plus any patterns offered by libraries consumed in our applications. Each solution comes with their own set of strengths and weaknesses: callbacks are typically a solid choice, but we often need to get libraries involved when we want to execute our work concurrently; Promises might be hard to understand at first, but they offer a few utilities like `Promise#all` for concurrent work, yet they might be hard to debug under some circumstances; Async functions require a bit of understanding on top of being comfortable with promises, but they're easier to debug and often result in simpler code, plus they can be interspersed with synchronous functions rather easily as well; Iterators and generators are powerful tools, but there aren't many practical use cases for them, so we must consider whether we're using them because they fit our needs or just because we can.
 
+It could be argued that callbacks are the simplest mechanism, although a similar case could be made for promises now that so much of the language is built around them. In any case, consistency should remain as the primary driving force of how we decide which pattern to use. While it's okay to mix and match a few different patterns, most of the time we should be using the same patterns again and again, so that our team can develop a sense of familiarity with the codebase, instead of having to take a guess whenever encountering an unchartered portion of the application.
 
+Using promises and async functions inevitably involves casting callbacks into this pattern. In the following example we make up a `delay` function that returns promises which settle after a provided timeout.
 
-.. why converting flows to promises may be a good way of simplifying it, on the basis that a lot of the language now is built around support for promises
+[source,javascript]
+----
+function delay(timeout) {
+  const resolver = resolve => {
+    setTimeout(() => {
+      resolve()
+    }, timeout)
+  }
+  return new Promise(resolver))
+}
+delay(2000).then(…)
+----
+
+A similar pattern would have to be used to consume functions taking a last argument that's an error-first callback style function in Node.js. Starting with Node.js v8.0.0, however, there's a utility built-in that "promisifies" these callback-based functions so that they return promises.
+
+[source,javascript]
+----
+import { promisify } from 'util'
+import { readFile } from 'fs'
+const readFilePromise = promisify(readFile)
+
+readFilePromise('./data.json', 'utf8').then(data => {
+  console.log(`Data: ${ data }`)
+})
+----
+
+There are libraries that could do the same for the client-side, one such example being `bluebird`, or we can create our own `promisify`. In essence, `promisify` takes the function that we want to use in promise-based flows, and returns a different -- "promisified" -- function which returns a promise where we call the original function passing all the provided arguments plus our own callback, where we settle the promise after deciding whether it should be fulfilled or rejected.
+
+[source,javascript]
+----
+function promisify(fn) {
+  return (...rest) => {
+    return new Promise((resolve, reject) => {
+      fn(...rest, (err, result) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve(result)
+      })
+    })
+  }
+}
+----
+
+Casting promises back into a callback-based format is less involved because we can add reactions to handle both the fulfillment and rejection results, and call back `done` passing in the corresponding result where appropriate.
+
+[source,javascript]
+----
+function unpromisify(p, done) {
+  p.then(
+    data => done(null, data),
+    error => done(error)
+  )
+}
+unpromisify(delay(2000), err => {
+  // …
+})
+----
+
+Lastly, when it comes to converting promises to async functions, the language acts as a native compatibility layer, boxing every expression we `await` on into promises, so there's no need for any casting at the application level.
+
+We can apply our guidelines of what constitutes clear code to asynchronous code flows just as well, since there aren't fundamental differences at play in the way we write these functions. Our focus should be on how these flows are connected together, regardless of whether they're comprised of callbacks, promises, or something else. When plumbing tasks together, one of the main sources of complexity is nesting. When several tasks are nested in a tree-like shape, we might end up with code that's deeply nested. One of the best solutions to this readability problem is to break our flow into smaller trees, which would consequently be more shallow. We'll have to connect these trees together by adding a few extra function calls, but we'll have removed significant complexity when trying to understand the general flow of operations.
 
 === 5.2 Composition and Inheritance
 
-..
+Let's explore how we can improve our application designs beyond what JavaScript offers purely at the language level. In this section we'll discuss two different approaches to growing parts of a codebase: inheritance, where we scale vertically by stacking pieces of code on top of each other so that we can leverage existing features while customizing others and adding our own; and composition, where we scale our application horizontally by adding related or unrelated pieces of code at the same level of abstraction while keeping complexity to a minimum.
 
-==== 5.2.1 Aspects and Decorators
+==== 5.2.1 The Perks of Inheritance
+
+Up until ES6 introduced first-class syntax for prototypal inheritance to JavaScript, it wasn't a widely used feature in user-land. However, with the introduction of a `class` keyword, paired with the React framework hailing classes as the go-to way of declaring stateful components, classes have shed some light on a pattern that was previously unpopular (at least when it comes to JavaScript).
+
+Inheritance is useful when there's an abstract interface to implement and methods to override, particularly when the objects being represented can be mapped to the real world. In practical terms and in the case of JavaScript, inheritance works great when the prototype being extended offers a good description for the parent prototype: a `Car` is a `Vehicle`, but a car is not a `SteeringWheel`, the wheel is just one aspect of the car.
+
+In the case of React, the `Component` class dictates the standard behavior and lifecycle of components, while leaving the rendering up to the inheriting class. When necessary, the consumer can also decide to implement methods such as `componentDidMount`, which allows for event binding after a component tree is mounted; `componentDidCatch`, which can be used to trap unhandled exceptions anywhere in the component lifecycle; among a variety of other virtual methods.
+
+
+
+
+
+
+
+
+==== 5.2.2 Composition: Aspects and Decorators
 
 how we can decorate components either via composition or decorators to add features to them, and reuse that logic for other kinds of components..
-
-==== 5.2.2 The Perks of Inheritance
-
-.. how inheritance can be useful when there's an abstract interface to implement and methods to override, thinking of React's Component in terms of `render()` being an abstract method to be implemented and pretty much every other method being a virtual method [in C# terms], explains benefits of these kinds of contracts. maybe hint at 5.5.2 protocols
 
 ==== 5.2.3 Choosing between Composition and Inheritance
 
