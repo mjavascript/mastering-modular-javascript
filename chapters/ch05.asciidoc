@@ -344,15 +344,28 @@ As with most things programming, your codebase will benefit from a semblance of 
 
 === 5.3 Code Patterns
 
-..
+Digging a bit deeper and into more specific elements of architecture design, in this section we'll explore a few of the most common patterns for creating boundaries from which complexity cannot escape, encapsulating functionality, and communicating across these boundaries or application layers.
 
 ==== 5.3.1 Revealing Module
 
-.. this one is sort-of obvious but explain how hiding most of a class in a function can help avoid unwarranted access
+The revealing module pattern has become a staple in the world of JavaScript. The premise is simple enough: expose precisely what consumers should be able to access, and avoid exposing anything else. The reasons for this are manifold. Preventing unwarranted access to implementation details reduces the likelihood of your module's interface being abused for unsupported use cases that might bring headaches to both the module implementer and the consumer alike.
+
+Explicitly avoid exposing methods meant to be private, such as a hypothetical `_calculatePriceHistory` method, which relies on the leading hyphen as a way of discouraging direct access and signaling that it should be regarded as private. Avoiding such methods prevents test code from accessing private methods directly, resulting in tests that make assertions solely regarding the interface and which can be later referenced as documentation on how to use the interface; prevents consumers from monkey-patching implementation details, leading to more transparent interfaces; and also often results in cleaner interfaces due to the fact that the interface is all there is, and there's no alternative ways of interacting with the module through direct use of its internals.
+
+JavaScript modules are of a revealing nature by default, making it easy for us to follow the revealing pattern of not giving away access to implementation details. Any function, object, class, or variable we declare is private unless we explicitly decide to `export` it from the module.
+
+When we expose only a thin interface, our implementation can change largely without having an impact on how consumers use the module, nor on the tests that cover the module. As a mental exercise, always be on the lookout for aspects of an interface that should be turned into implementation details and extricated from the interface itself.
 
 ==== 5.3.2 Object Factories
 
 .. and how they're great for keeping state contained to the instance
+
+
+
+
+
+
+
 
 ==== 5.3.3 Event Emission
 
