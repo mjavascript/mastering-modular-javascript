@@ -386,7 +386,7 @@ When should we `Array#reduce`?
 
 .. chat about filtering and mapping, how iterators can help create a pipeline, but how tools like `lodash` also do this when we use the wrapper style, and how this shouldn't be a topmost concern of ours
 
-==== 5.4.2 Reducing lists into as hash-maps
+==== 5.4.2 Reducing data unto accumulators and itself
 
 .. (and other use cases for reduce)
 
