@@ -8,7 +8,8 @@
     "chapters/ch01.asciidoc",
     "chapters/ch02.asciidoc",
     "chapters/ch03.asciidoc",
-    "chapters/ch04.asciidoc"
+    "chapters/ch04.asciidoc",
+    "chapters/ch05.asciidoc"
   ],
   "formats": {
     "pdf": {

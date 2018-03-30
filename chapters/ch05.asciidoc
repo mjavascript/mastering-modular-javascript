@@ -358,56 +358,85 @@ When we expose only a thin interface, our implementation can change largely with
 
 ==== 5.3.2 Object Factories
 
-.. and how they're great for keeping state contained to the instance
+Even when using JavaScript modules and following the revealing pattern strictly, we might end up with unintentional sharing of state across our usage of a module. Incidental state might result in unexpected results from an interface: consumers don't have a complete picture because other consumers are contributing changes to this shared state as well, sometimes making it hard to figure out what exactly is going on in an application.
 
+If we were to move our functional event emitter code snippet, with `onEvent` and `emitEvent`, into a JavaScript module, we'd notice that the `emitters` map is now a local global for that module, meaning all of the module's scope has access to `emitters`. This is what we'd want, because that way we can register event listeners in `onEvent` and fire them off in `emitEvent`. In most other situations, however, sharing persistent state across public interface methods is a recipe for unexpected bugs.
 
+Suppose we have a `StringBuilder` module that can be used to join strings in a performant manner. Even if consumers were supposed to use it synchronously and flush state in one fell swoop, without giving way for a second consumer to taint the state and produce unexpected results, our module shouldn't rely on consumer behavior to provide consistent results. The following contrived implementation relies on local shared state, and would need consumers to use the module strictly as intended, making all calls to `append` and `stringify` in sequence.
 
+[source,javascript]
+----
+const buffer = []
 
+export function append(...text) {
+  buffer.push(...text)
+}
 
+export function stringify() {
+  return buffer.splice(0, buffer.length).join('')
+}
+----
 
+Here's an example of how consuming the previous module could work. As soon as we try to asynchronously append text to the buffer, things will start getting out of hand, with strings getting bits and pieces unrelated to what we expect.
 
+[source,javascript]
+----
+const name = 'Sophie'
+append('hello')
+append(name)
+append(', it is nice to meet you!')
+stringify() // <- 'Hello Sophie, it is nice to meet you!'
+----
+
+Blatantly, this contrived module is poorly designed, as its buffer should never be used to construct several unrelated strings. We should instead expose a factory function that returns an object from its own self-contained scope, where all relevant state is shut off from the outside world. The methods on this object are equivalent to the exported interface of a plain JavaScript module, but state mutations are contained to instances that consumers create.
+
+[source,javascript]
+----
+function getStringBuilder() {
+  const buffer = []
+
+  function append(...text) {
+    buffer.push(...text)
+  }
+
+  function stringify() {
+    return buffer.splice(0, buffer.length).join('')
+  }
+
+  return { append, stringify }
+}
+----
+
+Using the string builder like this is just as straightforward, except that now we can do things asynchronously and even if other consumers are also using string builders of their own, each user will have their own state, preventing corrupt data.
+
+[source,javascript]
+----
+const { append, stringify } = getStringBuilder()
+const name = 'Sophie'
+append('hello')
+append(name)
+append(', it is nice to meet you!')
+stringify() // <- 'Hello Sophie, it is nice to meet you!'
+----
+
+As we just showed, even when using modern language constructs and JavaScript modules, it's not too hard to create complications through shared state. Thus, we should always strive to contain mutable state as close to its consumers as possible.
 
 ==== 5.3.3 Event Emission
 
-.. events for things that we want to have clearly-delineated side-effects.
+We've already explored at length the pattern of registering event listeners associated to arbitrary plain JavaScript objects and firing events of any kind, triggering those listeners. Event handling is most useful when we want to have clearly-delineated side-effects.
 
-==== 5.3.4 Message Passing
+In the browser, for instance, we can bind a `click` event to an specific DOM element. When the `click` event is fired, we might issue an HTTP request, render a different page, start an animation, or play an audio file.
 
-.. situations like SW, normal workers, extensions, frames.
+Events are a useful way of reporting progress whenever we're dealing with a queue. While processing a queue, we could fire a `progress` event whenever an item is processed, allowing the UI or any other consumer to render and update a progress indicator or apply a partial unit of work relying on the data processed by the queue.
 
-=== 5.4 Data manipulation use cases
+Events also offer a mechanism to provide hooks into the lifecycle of an object, for example the Angular view rendering framework used event propagation to enable hierarchical communication across separate components. This allowed Angular codebases to keep components decoupled from one another while still being able to react to each other's state changes and interact.
 
-.. tips and tricks to consider when working with data. not isolated methods but instead use cases.
-.. Mapping data
-Filtering through data
-When should we `Array#reduce`?
+Having event listeners allowed a component to receive a message, perhaps process it by updating its display elements, and then maybe reply with an event of its own, allowing for rich interaction without necessarily having to introduce another module to act as an intermediary.
 
-==== 5.4.1 Filtering and mapping data
+==== 5.3.4 Message Passing and the Simplicity of JSON
 
-.. chat about filtering and mapping, how iterators can help create a pipeline, but how tools like `lodash` also do this when we use the wrapper style, and how this shouldn't be a topmost concern of ours
+When it comes to ServiceWorker, web workers, browser extensions, frames, API calls, or WebSocket integrations, we might run into issues if we don't plan for robust data serialization ahead of time. This is generally when using classes to represent data starts to breaks down, because we'd need a way to serialize instances into their raw data counterparts (typically JSON) before sending it over the wire, since the receiving end wouldn't know how to decode a JavaScript class instance, and there isn't a standardized way of encoding them either. At the same time, we'd need a way to deserialize this plain JSON data on the receiving end, creating another class instance making sure it has the correct state.
 
-==== 5.4.2 Reducing data unto accumulators and itself
+JSON, a subset of the JavaScript grammar, was purpose-built for this use case, where we often have to serialize data, send it over the wire, and deserialize it on the other end. Plain JavaScript objects are a great way to store data in our applications, offer frictionless serialization out the box, and lead to cleaner data structures because we can keep logic decoupled from the data.
 
-.. (and other use cases for reduce)
-
-==== 5.4.3 The caveats of `Array#reduce`
-
-.. it's not used often, but when it's used, it's quite often for the wrong reasons. explain why it can be very complex to understand if the use case isn't correct
-
-=== 5.5 Conventions and Protocols
-
-..
-
-==== 5.5.1 Enforcing User-Defined Contracts
-
-.. coming up with own conventions, what/why and how to enforce it. probably talk of Symbol
-
-==== 5.5.2 JavaScript Protocols
-
-[aka interface]
-
-.. the proposal: https://github.com/michaelficarra/proposal-first-class-protocols
-
-==== 5.5.3 Conventions at a Large Scale
-
-.. talk about conventions such as MVC, React's view rendering mechanism, or other large-scale conventions we adopt and seldom think about etc
+When the language on both the sending and receiving ends is JavaScript, we can share a module with all the functionality that we need around the data structure. This way, we don't have to worry about serialization, since we're using plain JavaScript objects and can rely on JSON for the transport layer. We don't have to concern ourselves with sharing functionality either, because we can rely on the JavaScript module system for that part.
