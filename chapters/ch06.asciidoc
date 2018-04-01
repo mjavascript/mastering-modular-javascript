@@ -5,10 +5,37 @@ Even though most of us work on projects where the source code is not publicly av
 
 In this chapter we'll explore open-source principles and look at ways in which we can adapt a methodology and set of robustness principles known as "The Twelve-Factor App"footnote:[see-tfa,You can find the original 12 Factor App methodology and its documentation at: https://mjavascript.com/out/12factor.] -- generally devised for back-end development -- to modern JavaScript application development, front-end and back-end alike.
 
-=== 6.1
+=== 6.1 Secure Configuration Management
+
+When it comes to configuration secrets in closed-source projects, like API keys or HTTP session decryption keys, it is not uncommon for them to be hardcoded in place. In open-source projects, instead, these are typically instead obtained through environment variables or encrypted configuration files that aren't committed to version control systems alongside our codebase.
+
+In the case of open-source projects, this allows the developer to share the vast majority of their application without compromising the security of their production systems. While this might not be an immediate concern in closed-source environments, we need to consider that once a secret is committed to version control, it's etched into our version history unless we force a rewrite of that history, scrubbing the secrets from existence. Even then, it cannot be guaranteed that a malicious actor has gained access to these secrets at some point before they were scrubbed from history, and thus a better solution to this problem is rotating the secrets that might be compromised, revoking access through the old secrets and starting to use new, uncompromised secrets.
+
+While effective, this approach can be time consuming when we have several secrets under our belt, and when our application is large enough, leaked secrets might pose significant risk even when exposed for a short period of time. As such, it's best to approach secrets with careful consideration by default, and avoid headaches later in the lifetime of a project.
+
+The absolute least we could be doing is giving every secret a unique name, and placing them in a JSON file. Any sensitive information or configurable values may qualify as a secret, and this might range from private signing keys used to sign certificates to port numbers or database connection strings.
+
+[source,javascript]
+----
+{
+  "PORT": 3000,
+  "MONGO_URI": "mongodb://localhost/mjavascript",
+  "SESSION_SECRET": "ditch-foot-husband-conqueror"
+}
+----
+
+Instead of hardcoding these variables wherever they're used, or even placing them in a constant at the beginning of the module, we centralize all sensitive information in a single file, that can then be excluded from version control. Besides helping us share the secrets across modules, making updates easier, this approach encourages us to isolate information that we previously wouldn't have considered sensitive, like the work factor used for salting passwords.
+
+Another benefit of going down this road is that, given we have all environment configuration in a central store, we can point our application to a different secret store depending on whether we're provisioning the application for production, staging, or one of the local development environments used by our developers.
+
+When it comes to sharing the secrets, given we're purposely excluding them from source version control, we can take many approaches, such as using environment variables, storing them in JSON files kept in an Amazon S3 bucket, or using an encrypted repository dedicated to our application secrets.
+
+==== 6.2
 
 ..
 
-==== 6.1.1
 
-..
+
+
+
+
