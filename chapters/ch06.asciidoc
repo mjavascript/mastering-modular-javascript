@@ -30,10 +30,39 @@ Another benefit of going down this road is that, given we have all environment c
 
 When it comes to sharing the secrets, given we're purposely excluding them from source version control, we can take many approaches, such as using environment variables, storing them in JSON files kept in an Amazon S3 bucket, or using an encrypted repository dedicated to our application secrets.
 
-==== 6.2
+==== 6.2 Dependency Containment
 
-..
+.. how to manage deps
 
+
+
+==== 6.3 First Party, Third Party, and Last Party
+
+.. treat everything as if were third party, apis and components alike
+
+
+
+==== 6.4 Build, Release, Run
+
+.. clearly defined build processes
+
+
+
+==== 6.5 Statelessness
+
+.. avoid keeping global state
+
+
+
+==== 6.6 Disposability
+
+.. gracefully blow up components
+
+
+
+==== 6.7 Parity in Development and Production
+
+.. keeping stuff like CSP on par makes for less brittle and unexpected things
 
 
 
