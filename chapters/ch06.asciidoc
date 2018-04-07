@@ -30,17 +30,21 @@ Another benefit of going down this road is that, given we have all environment c
 
 When it comes to sharing the secrets, given we're purposely excluding them from source version control, we can take many approaches, such as using environment variables, storing them in JSON files kept in an Amazon S3 bucket, or using an encrypted repository dedicated to our application secrets.
 
-==== 6.2 Dependency Containment
+==== 6.2 Explicit Dependency Management
 
-.. how to manage deps
+It's not practical to include dependencies in our repositories, given these are often in the hundreds of megabytes and often include environment-dependant and operating system dependant files. During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve bugs and tighten our grip around security vulnerabilities. For deployments, we want reproducible builds, where installing our dependencies yields the same results every time. The solution is often to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through the Yarn package manager and its `yarn.lock` manifest, both of which we should be publishing to our versioned repository.
 
+Every dependency in our application should be explicitly declared in our manifest, relying on globally installed packages or global variables as little as possible. Implicit dependencies involve additional steps across environments, where developers and deployment flows alike must take action to ensure these extra dependencies are installed, beyond what a simple `npm install` step could achieve.
 
+Always installing identical versions of our dependencies -- and identical versions of our dependencies' dependencies -- brings us one step closer to having development environments that closely mirror what we do in production. This increases the likelyhood we can swiftly reproduce bugs that occurred in production in our local environments, while decreasing the odds that something that worked during development fails in staging.
 
-==== 6.3 First Party, Third Party, and Last Party
+==== 6.3 Interfaces as Black Boxes
 
-.. treat everything as if were third party, apis and components alike
+On a similar note to that of the last section, we should treat our own components no differently than how we treat third party libraries and modules. Granted, we can make changes to our own code a lot more quickly than we can effect change in third party code -- if that's at all possible. However, when we treat all components and interfaces (including our own HTTP API) as if they were foreign to us, we can focus on consuming and testing against interfaces, while ignoring the underlying implementation.
 
+Avoiding distinctions helps us write unit tests where we mock dependencies that aren't under test, regardless of whether they were developed in-house or by a third party. When writing tests we always assume that third party modules are generally well-tested enough that it's not our responsibility to include them in our test cases. The same thinking should apply to first party modules that just happen to be dependencies of the module we're currently writing tests for.
 
+This same reasoning can be applied to security concerns such as input sanitization. Regardless of what kind of application we're developing, we can't trust user input unless it's sanitized. Malicious actors could be angling to take over our servers, our customers' data, or otherwise inject content onto our web pages. These users might be customers or even employees, so we shouldn't treat them differently depending on that, when it comes to input sanitization.
 
 ==== 6.4 Build, Release, Run
 
