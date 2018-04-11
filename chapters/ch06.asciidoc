@@ -48,7 +48,17 @@ This same reasoning can be applied to security concerns such as input sanitizati
 
 ==== 6.4 Build, Release, Run
 
-.. clearly defined build processes
+Having clearly defined and delineated build processes is key when it comes to successfully managing an application across development, staging, and production environments.
+
+Build processes have a few different aspects to them. At the highest level, there's the shared logic where we install and compile our assets so that they can be consumed by our runtime application.
+
+For development, we focus on enhanced debugging facilities, using development versions of libraries, source maps, and verbose logging levels; custom ways of overriding behavior, so that we can easily mimic how the production environment would look like, and where possible we also throw in a real-time debugging server that takes care of restarting our application when code changes, applying CSS changes without refreshing the page, and so on.
+
+In staging, we want an environment that closely resembles production, so we'll avoid most debugging features, but we might still want source maps and verbose logging to be able to trace bugs with ease.
+
+Production focuses more heavily on minification, image optimization, and advanced techniques like route-based bundle splitting, where we only serve modules that are actually used by the pages visited by a user; tree shaking, where we statically analyze our module graph and remove functions that aren't being used; and security features, such as a hardened Content-Security-Policy policy that mitigates attack vectors like XSS or CSRF.
+
+Note how up until this point we haven't discussed environments. Building assets and deploying them is often tightly coupled, meaning it's often non-trivial to build an application for production but deploy it for local development to see whether it's working as expected.
 
 
 
