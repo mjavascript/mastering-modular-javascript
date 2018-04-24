@@ -56,29 +56,42 @@ For development, we focus on enhanced debugging facilities, using development ve
 
 In staging, we want an environment that closely resembles production, so we'll avoid most debugging features, but we might still want source maps and verbose logging to be able to trace bugs with ease.
 
-Production focuses more heavily on minification, image optimization, and advanced techniques like route-based bundle splitting, where we only serve modules that are actually used by the pages visited by a user; tree shaking, where we statically analyze our module graph and remove functions that aren't being used; and security features, such as a hardened Content-Security-Policy policy that mitigates attack vectors like XSS or CSRF.
+Production focuses more heavily on minification, image optimization, and advanced techniques like route-based bundle splitting, where we only serve modules that are actually used by the pages visited by a user; tree shaking, where we statically analyze our module graph and remove functions that aren't being used; and security features, such as a hardened `Content-Security-Policy` policy that mitigates attack vectors like XSS or CSRF.
 
 Note how up until this point we have focused on how we build our assets, but not how we deploy them. These two processes, build and deployment, are closely related but they shouldn't be intertwined. A clean build process where we end up with a packaged application we can easily deploy, and a deployment process that takes care of the specifics regardless of whether you're deploying to your own local environment, or to a hosted staging or production environment, means that for the most part we won't need to worry about environments during our build processes or at runtime.
 
 ==== 6.5 Statelessness
 
-We've already explored how state, if left unchecked, can lead us straight to the heat death of our applications.
+We've already explored how state, if left unchecked, can lead us straight to the heat death of our applications. Keeping state to a minimum translates directly into applications that are easier to debug. The least global state there is, the less unpredictable the current conditions of an application will be at any one point in time, and the least surprises we'll run into while debugging.
 
-.. avoid keeping global state
+One particularly insidious form of state is caching. A cache is a great way to increase performance in an application by avoiding expensive lookups most of the time. When state management tools are used as a caching mechanism, we might fall into a trap where different bits and pieces of derived application state were derived at different points in time, thus rendering different bits of the application using data computed at different points in time.
 
-
+Derived state should seldom be treated as state that's separate from the data it was derived from. When it's not, we might run into situations where the original data is updated, but the derived state is not, becoming stale and inaccurate. When, instead, we always compute derived state from the original data, we reduce the likelyhood that this derived state will become stale.
 
 ==== 6.6 Disposability
 
-.. gracefully blow up components
+Whenever we hook up an event listener, regardless of whether we're listening for DOM events or those from an event emitter, we should also strongly consider disposing of the listener when the concerned parties are no longer interested in the event being raised. For instance, if we have a React component that, upon mount, starts listening for `resize` events on the `window` object, we should also make sure we remove those event listeners upon the component being unmounted.
 
+This kind of dilligence ensures that we can set up and tear down bits of our application without leaving behind mounting piles of listeners that would result in memory leaks, which are hard to track down and pinpoint.
 
+The concept of disposability goes beyond just event handlers, though. Any sort of resource that we allocate and attach to an object, component, or service is created, should be released and cleaned up when that attachment ceases to exist. This way, we can confidently create and dispose of as many components as we want, without putting our application's performance at risk.
 
 ==== 6.7 Parity in Development and Production
 
-.. keeping stuff like CSP on par makes for less brittle and unexpected things
+We've established the importance of having clearly defined build and deployment processes. In a similar vein, we have the different application environments like development, production, staging, feature branches, SaaS vs. on-premise environments, and so on. Environments are divergent by definition, we are going to end up with different features in different environments, whether they are debugging facilities, product features, or performance optimizations.
 
+Whenever we incorporate environment-specific feature flags or logic, we need to pay attention to the discrepancies introduced by these changes. Could the environment-dependant logic be tightened so that the bare minimum divergence is introduced? Should we isolate the newly introduced logic fork into a single module that takes care of as many aspects of the divergence as possible? Could the flags that are enabled as we're developing features for an specific environment result in inadvertently introducing bugs into other environments where a different set of flags is enabled?
 
+Conversely, the opposite is true. Like with many things programming, creating these divergences is relatively easy, whereas deleting them might prove most challenging. This difficulty arises from the unknown situations we might not typically run into during development or unit testing, but which are still valid situations in our production environments.
 
+As an example, consider the following scenario. We have a production application using `Content-Security-Policy` rules to mitigate malicious attack vectors. For the development environment, we also add a few extra rules like `'unsafe-inline'` letting our developer tools manipulate the page so that code and style changes are reloaded without requiring a full page refresh, speeding up our precious development productivity and saving time. Our application already has a component that users can leverage to edit programming source code, but we now have a requirement to change that component.
 
+We swap the current component with the a new one from our company's own component framework, so we know it's battle-tested and works well in other production applications developed in house. We test things in our local development environment, and everything works as expected. Tests pass. Other developers review our code, test locally in their own environments as well, and find nothing wrong with it. We merge our code, and a couple weeks later deploy to production. Before long, we start getting support requests about the code editing feature being broken, and need to roll back the changeset which introduced the new code editor.
 
+What went wrong? We didn't notice the fact that the new component doesn't work unless `style-src: 'unsafe-inline'` is present. Given that we allow inline styles in development, catering to our convenient developer tools, this wasn't a problem during development or local testing performed by our team mates. However when we deploy to production, which follows a more strict set of CSP rules, the `'unsafe-inline` rule is not served, and the component breaks down.
+
+The problem here is that we had a divergence in parity which prevented us from identifying a limitation in the new component: it uses inline styles to position the text cursor. This is at odds with our strict CSP rules, but it can't be properly identified because our development environment is more lax about CSP than production is.
+
+As much as possible, we should strive to keep these kinds of divergences to a minimum, because if we don't, bugs might find their way to production, and a customer might end up reporting the bug to us. Merely being aware of discrepancies like this is not enough, because it's not practical nor effective to keep these logic gates in your head so that whenever you're implementing a change you mentally go through the motions of how the change would differ if your code was running in production instead.
+
+Proper integration testing might catch many of these kinds of mistakes, but that won't always be the case.
