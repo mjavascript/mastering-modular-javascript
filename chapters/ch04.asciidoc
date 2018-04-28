@@ -1,7 +1,7 @@
 [[shaping-internals]]
 == Shaping Internals
 
-Thus far we've addressed modular design and API design concerns from a high level perspective, but avoided plunging into the deep end of implementation details. In contrast, this chapter is devoted to advice and concrete actions we can take to improve the quality of our component implementations. We'll discuss complexity, ways to remediate it, the perils of state, and how to better leverage data structures.
+Thus far we've addressed modular design and API design concerns from a high-level perspective, but avoided plunging into the deep end of implementation details. In contrast, this chapter is devoted to advice and concrete actions we can take to improve the quality of our component implementations. We'll discuss complexity, ways to remediate it, the perils of state, and how to better leverage data structures.
 
 === 4.1 Internal Complexity
 
@@ -115,6 +115,9 @@ if (hasValidToken) {
 }
 ----
 
+> Why not:
+> const hasValidToken = hasToken && auth.expires > Date.now()
+
 Both of these options have their downsides. If we couple the return statements with the parent function, we'll need to be careful if we want to replicate the logic elsewhere, as the return statements and possibly their logic will have to adapt as well. If we decide to use ternary operators as a way of short-circuiting, we'll end up with logic that might be as complex as what we originally had in the `if` statement.
 
 Using a function not only avoids these two problems thanks to the ability to `return` intermediate results, but also defers reasoning about its contents until we actually need to understand how tokens are checked for validity.
@@ -177,7 +180,7 @@ var double = function(x) {
 }
 ----
 
-Furthermore, if we're dealing with a `let` or `const` binding, then TDZ semantics will produce an error if we reference the binding at all before the variable declaration statement is reached.
+Furthermore, if we're dealing with a `let` or `const` binding, then TDZ semantics produce an error if we reference the binding at all before the variable declaration statement is reached.
 
 [source,javascript]
 ----
@@ -211,7 +214,7 @@ Given the stack-based nature of programming, it's not that easy to naturally app
 
 Deliberate, pyramidal structures where we deal with higher level concerns near the top and switch to more specific problems as we go deeper into the inner workings of a system works wonders in keeping complexity on a tight leash. Such structures are particularly powerful because they break up complex items into their own individual units near the flat bottom of the system, avoiding a complicated interweaving of concerns that are fuzzied together, becoming undistinguishable from one another over time.
 
-Pushing anything that gets in the way of the current flow to the bottom of a function is an effective way of streamlining readability. As an example, consider the case where we have a non-trivial mapper inline in the heart of a function. In the following code snippet we're mapping the users into user models, as we often need to do when we prepare JSON responses for API calls.
+Pushing anything that gets in the way of the current flow to the bottom of a function is an effective way of streamlining readability. As an example, consider the case where we have a non-trivial mapper inline in the heart of a function. In the following code snippet we're mapping the users into user models, as we often need to do when preparing JSON responses for API calls.
 
 [source,javascript]
 ----
@@ -319,6 +322,8 @@ a(function () {
 
 The foremost problem with this kind of structure is scope inheritance. In the deepest callback, passed to the `g` function, we've inherited the combined scopes of all the parent callbacks. As functions become larger, and more variables are bound into each of these scopes, it becomes ever more challenging to understand one of the callbacks in isolation from its parents.
 
+> This example is begging for the pipeline operator! :) (I don’t expect it to be mentioned though as it’s still in the early stages of standardization.)
+
 This kind of coupling can be reverted by naming the callbacks and placing them all in the same nesting level. Named functions may be reused in other parts of our component, or exported to be used elsewhere. In the following example we've eliminated up to 3 levels of unnecessary nesting, and by eliminating nesting we've made the scope for each function more explicit.
 
 [source,javascript]
@@ -411,13 +416,15 @@ async function main() {
 }
 ----
 
+> Hell yes!
+
 ==== 4.2.6 Factoring Similar Tasks
 
 We've already discussed at length why creating abstractions isn't always the best way of reducing complexity in an application. Abstractions can be particularly damaging when created too early: at the time we might not have enough information about the shape and requirements for other components that we might want to hide behind the abstraction layer, and over time we might end up aggressively shaping components only so that they fit the abstraction, which could have been avoided by not settling for an abstraction too early.
 
 When we do avoid creating abstractions prematurely, we'll start noticing functions that have an uncanny resemblance to the shape of similar functions: maybe the flow is identical, maybe the output is similar, or maybe all that really changes is we're accessing an attribute named `href` in one case and an attribute named `src` in another case.
 
-Consider the case of an HTML crawler which needs to pull out snippets of an HTML page and reuse them later in a different context. Among other things, this crawler will need to take relative resource locators like `/weekly` and resolve them to absolute endpoints like `https://ponyfoo.com/weekly`, depending on the origin where the resource was crawled from. This way, the HTML snippets can then be repurposed on other mediums such as on a different origin or a PDF file, without breaking the end-user experience.
+Consider the case of an HTML crawler which needs to pull out snippets of an HTML page and reuse them later in a different context. Among other things, this crawler needs to take relative resource locators like `/weekly` and resolve them to absolute endpoints like `https://ponyfoo.com/weekly`, depending on the origin where the resource was crawled from. This way, the HTML snippets can then be repurposed on other mediums such as on a different origin or a PDF file, without breaking the end-user experience.
 
 The following piece of code takes a piece of HTML and transforms `a[href]` and `img[src]` into absolute endpoints using the `$` jQuery-like DOM utility library.
 
@@ -429,12 +436,22 @@ function absolutizeHtml(html, origin) {
     const $element = $(this)
     const href = $element.attr('href')
     const absolute = absolutize(href, origin)
+
+    // In the DOM, you could just use this.href, which always returns a normalized URL string:
+    const absolute = this.href;
+    // No need for any of this other code. Maybe use a different example?
+
     $element.attr('href', absolute)
   })
   $dom.find('img[src]').each(function () {
     const $element = $(this)
     const src = $element.attr('src')
     const absolute = absolutize(src, origin)
+
+    // In the DOM, you could just use this.src, which always returns a normalized URL string:
+    const absolute = this.src;
+    // No need for any of this other code. Maybe use a different example?
+
     $element.attr('src', absolute)
   })
   return $dom.html()
@@ -590,7 +607,7 @@ const successfulMovies = movieModels.filter(
 )
 ----
 
-Thanks to us making fresh copies of the objects we're working with, we've preserved the `movies` collection intact. If we now assume that `movies` was an input to our function, we could say that modifying any movie in that collection would've made our function impure, since it'd have the side-effect of unexpectedly altering the input.
+Thanks to us making fresh copies of the objects we're working with, we've preserved the `movies` collection. If we now assume that `movies` was an input to our function, we could say that modifying any movie in that collection would've made our function impure, since it'd have the side-effect of unexpectedly altering the input.
 
 By introducing immutability, we've kept the function pure. That means that its output only depends on its inputs, and that we don't create any side-effects such as changing the inputs themselves. This in turn guarantees that the function is idempotent, where calling a function repeatedly with the same input always produces the same result, given the output depends solely on the inputs and there are no side-effects. In contrast, the idempotence property would've been brought into question if we had tainted the input by adding a `profit` field to every movie.
 
@@ -632,7 +649,9 @@ An array-based list is great whenever we need to sort the list or map its object
 }
 ----
 
-The data structure we pick will constrain and determine the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures. It's usually well worth it to transform data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
+> If it’s an “object map” then it probably should be a Map. Maybe at least mention `Map` here?
+
+The data structure we pick constrains and determines the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures. It's usually well worth it to transform data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
 
 Now, we can't possibly foresee all scenarios when coming up with the data structure we'll use at first, but what we can do is create intermediate representations of the same underlying data using new structures that do fit the new requirements. We can then leverage these structures, which were optimized for the new requirements, when writing code to fulfill those requirements. The alternative, resorting to the original data structure when writing new code that doesn't quite fit with it, will invariably result in logic that has to work around the limitations of the existing data structure, and as a result we'll end up with less than ideal code, that might take some effort understanding and updating.
 

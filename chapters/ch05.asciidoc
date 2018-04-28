@@ -31,7 +31,7 @@ Besides these improvements, template literals also offer the possibility of tagg
 
 Whenever we need to compose a string using data, template literals are a terse alternative to string concatenation. When we want to avoid escaping single or double quotes, template literals can help. The same is true when we want to write multi-line strings.
 
-In every other case -- when there's no interpolation, escaping, or multi-line needs -- the choice comes down to a mere matter of style. In the last chapter of Practical Modern JavaScript, "Practical Considerations", I advocatedfootnoteref:[template-literals,You can read a blog post I wrote about why template literals are better than strings at: https://mjavascript.com/out/template-literals. Practical Modern JavaScript (O'Reilly, 2017) is the first book in the Modular JavaScript series. You're currently reading the second book of the same series.] in favor of using template literals in every case. This was for a few factors, but here's the two most important ones: because of convenience, so that you don't have to convert a string back and forth between single quoted string and template literals depending on its contents; and because of consistency, so that you don't have to stop and think about which kind of quotation mark -- single, double, or backtick -- to use each time. Template literals may take some time to get accustomed to: we've used single quoted strings for a long time, and template literals have only been around for a while. You or your team might prefer sticking with single quoted strings, and that's perfectly fine too.
+In every other case -- when there's no interpolation, escaping, or multi-line needs -- the choice comes down to a mere matter of style. In the last chapter of Practical Modern JavaScript, "Practical Considerations", I advocatedfootnoteref:[template-literals,You can read a blog post I wrote about why template literals are better than strings at: https://mjavascript.com/out/template-literals. Practical Modern JavaScript (O'Reilly, 2017) is the first book in the Modular JavaScript series. You're currently reading the second book of the same series.] in favor of using template literals in every case. This was for a few factors, but here's the two most important ones: because of convenience, so that you don't have to convert a string back and forth between single-quoted string and template literals depending on its contents; and because of consistency, so that you don't have to stop and think about which kind of quotation mark -- single, double, or backtick -- to use each time. Template literals may take some time to get accustomed to: we've used single-quoted strings for a long time, and template literals have only been around for a while. You or your team might prefer sticking with single-quoted strings, and that's perfectly fine too.
 
 [NOTE]
 ====
@@ -40,7 +40,7 @@ When it comes to style choices, you'll rarely face problems if you let your team
 Using a tool like ESLint and a continuous integration job to enforce its rules means nobody has to perform the time consuming job of keeping everyone in line with the house style. When tooling enforces style choices, discussions about those choices won't crop up as often in discussion threads while contributors are collaborating on units of work.
 ====
 
-It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity. While the former may make a codebase subjectively easier to read, or aesthetically pleasing, it is only through deliberate action that we'll keep complexity in check. Granted, a consistent style throughout a codebase can help contain complexity, but the exact style is unimportant as long as we enforce it consistently.
+It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity. While the former may make a codebase subjectively easier to read, or aesthetically pleasing, it is only through deliberate action that we keep complexity in check. Granted, a consistent style throughout a codebase can help contain complexity, but the exact style is unimportant as long as we enforce it consistently.
 
 ==== 5.1.2 Destructuring, Rest, and Spread
 
@@ -88,6 +88,8 @@ const newCopy = { ...fax, date: new Date() }
 ----
 
 This allows us to create slightly modified shallow copies of other objects. When dealing with discrete state management, this means we don't need to resort to `Object.assign` method calls or utility libraries. While there's nothing inherently wrong with `Object.assign` calls, the object spread `...` abstraction is easier for us to internalize and mentally map its meaning back to `Object.assign` without us realizing it, and so the code becomes easier to read because we're dealing with less unabstracted knowledge.
+
+> Another benefit worth pointing out: Object.assign() is a footgun, in that if you forget to pass an empty object literal as the first argument for this use case, you end up mutating the object. With object spread, there is no way to accidentally mutate anything.
 
 ==== 5.1.3 Striving for simple `const` bindings
 
@@ -146,6 +148,16 @@ const finalValues = doubledValues.filter(value => value > 5)
 // <- [6, 8, 10]
 ----
 
+> Worth mentioning the following?
+
+[source,javascript]
+----
+const finalValues = [1, 2, 3, 4, 5]
+  .map(value => value * 2)
+  .filter(value => value > 5)
+// <- [6, 8, 10]
+----
+
 Let's move onto a more interesting topic: asynchronous code flows.
 
 ==== 5.1.4 Navigating Callbacks, Promises, and Asynchronous Functions
@@ -181,6 +193,8 @@ readFilePromise('./data.json', 'utf8').then(data => {
   console.log(`Data: ${ data }`)
 })
 ----
+
+> Side note: In Node.js v10 fs/promises is available.
 
 There are libraries that could do the same for the client-side, one such example being `bluebird`, or we can create our own `promisify`. In essence, `promisify` takes the function that we want to use in promise-based flows, and returns a different -- "promisified" -- function which returns a promise where we call the original function passing all the provided arguments plus our own callback, where we settle the promise after deciding whether it should be fulfilled or rejected.
 
@@ -288,6 +302,7 @@ const emitters = new Map()
 function onEvent(target, eventType, listener) {
   if (!emitters.has(target)) {
     emitters.set(target, {})
+    // Why an object? You’re using it like a Map. It should be a Map.
   }
 
   const listeners = emitters.get(target)
@@ -377,7 +392,7 @@ export function stringify() {
 }
 ----
 
-Here's an example of how consuming the previous module could work. As soon as we try to asynchronously append text to the buffer, things will start getting out of hand, with strings getting bits and pieces unrelated to what we expect.
+Here's an example of how consuming the previous module could work. As soon as we try to asynchronously append text to the buffer, things start getting out of hand, with strings getting bits and pieces unrelated to what we expect.
 
 [source,javascript]
 ----
@@ -438,5 +453,7 @@ Having event listeners allowed a component to receive a message, perhaps process
 When it comes to ServiceWorker, web workers, browser extensions, frames, API calls, or WebSocket integrations, we might run into issues if we don't plan for robust data serialization ahead of time. This is generally when using classes to represent data starts to breaks down, because we'd need a way to serialize instances into their raw data counterparts (typically JSON) before sending it over the wire, since the receiving end wouldn't know how to decode a JavaScript class instance, and there isn't a standardized way of encoding them either. At the same time, we'd need a way to deserialize this plain JSON data on the receiving end, creating another class instance making sure it has the correct state.
 
 JSON, a subset of the JavaScript grammar, was purpose-built for this use case, where we often have to serialize data, send it over the wire, and deserialize it on the other end. Plain JavaScript objects are a great way to store data in our applications, offer frictionless serialization out the box, and lead to cleaner data structures because we can keep logic decoupled from the data.
+
+> Note: it’s not quite a subset yet, but we’re getting there: https://github.com/tc39/proposal-json-superset :) (It’s fine to not mention this; by the time the book gets published the proposal might be at Stage 4.)
 
 When the language on both the sending and receiving ends is JavaScript, we can share a module with all the functionality that we need around the data structure. This way, we don't have to worry about serialization, since we're using plain JavaScript objects and can rely on JSON for the transport layer. We don't have to concern ourselves with sharing functionality either, because we can rely on the JavaScript module system for that part.
