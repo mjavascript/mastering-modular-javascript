@@ -114,7 +114,9 @@ export default function accessor(key) {
 }
 ```
 
-There are many other ways of storing our application settings, each with their pros and cons. The approach we just discussed, though, is relatively easy to implement and solid enough to get started. As an upgrade, you might want to look into using AWS Secrets Manager. That way, you'd have a single secret to take care of in team members' environments, instead of every single secret. A secret service also takes care of encryption, secure storage, secret rotation (useful in the case of a data breach), among other advanced features.
+There are many other ways of storing our application settings, each with their pros and cons. The approach we just discussed, though, is relatively easy to implement and solid enough to get started. As an upgrade, you might want to look into using AWS Secrets Manager. That way, you'd have a single secret to take care of in team members' environments, instead of every single secret.
+
+A secret service also takes care of encryption, secure storage, secret rotation (useful in the case of a data breach), among other advanced features.
 
 ==== 6.2 Explicit Dependency Management
 
