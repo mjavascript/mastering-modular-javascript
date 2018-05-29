@@ -30,6 +30,92 @@ Another benefit of going down this road is that, given we have all environment c
 
 When it comes to sharing the secrets, given we're purposely excluding them from source version control, we can take many approaches, such as using environment variables, storing them in JSON files kept in an Amazon S3 bucket, or using an encrypted repository dedicated to our application secrets.
 
+One concrete and effective way of accomplishing this in real-world environments is using several "dot env" files, each with a clearly defined purpose. In order of precedence:
+
+- `.env.defaults.json` can be used to define default values that aren't necessarily overwritten across environments, such as the application listening port, the `NODE_ENV` variable, and configurable options you don't want to hard-code into your application code. These default settings should be safe to check into source control
+- `.env.production.json`, `.env.staging.json`, and others can be used for environment-specific settings, such as the various production connection strings for databases, cookie encoding secrets, API keys, and so on
+- `.env.json` could be your local, machine-specific settings, useful for secrets or configuration changes that shouldn't be shared with other team members
+
+Furthermore, you could also accept simple modifications to environment settings through environment variables, such as when executing `PORT=3000 node app`, which is often convenient during development.
+
+There's an npm package called `nconf` which we can use to handle reading and merging all of these sources of application settings with ease.
+
+The following piece of code shows how you could configure `nconf` to do what we've just described.
+
+```
+// env
+import nconf from 'nconf'
+
+nconf.env()
+nconf.file('environment', `.env.${ nodeEnv() }.json`)
+nconf.file('machine', '.env.json')
+nconf.file('defaults', '.env.defaults.json')
+
+process.env.NODE_ENV = nodeEnv() // consistency
+
+function nodeEnv() {
+  return accessor('NODE_ENV')
+}
+
+function accessor(key) {
+  return nconf.get(key)
+}
+
+export default accessor
+```
+
+The module also exposes an interface through which we can consume these application settings by making a function call such as `env('PORT')`.
+
+Assuming we have an `.env.defaults.json` that looks like the following, we could pass in the `NODE_ENV` flag when starting our staging, test, or production application and get the proper environment settings back, helping us simplify the process of loading up an environment.
+
+```
+{
+  "NODE_ENV": "development"
+}
+```
+
+When it comes to the browser, we could use the exact same files and environment variables, but include a dedicated browser-specific object field, like so:
+
+```
+{
+  "NODE_ENV": "development",
+  "BROWSER_ENV": {
+    "MIXPANEL_API_KEY": "some-api-key",
+    "GOOGLE_MAPS_API_KEY": "another-api-key"
+  }
+}
+```
+
+Then, we could write a tiny script like the following to print all of those settings.
+
+```
+// print-browser-env
+import env from './lib/env'
+console.log(env('BROWSER_ENV'))
+```
+
+Naturally, we don't want to mix server-side settings with browser settings, because browser settings are usually accessible to anyone with a user agent, the ability to visit our website, and basic programming skills, meaning we would do well not to bundle highly sensitive secrets with our client-side applications. To resolve the issue, we can have a build step that prints the settings for the appropriate environment to an `.env.browser.json` file, and then only use that file on the client-side.
+
+```
+node print-browser-env
+```
+
+Furthermore, we should replicate the `env` file from the server-side in the client-side, so that application settings are consumed in much of the same way in both sides of the wire.
+
+```
+// client/env
+import env from './env.browser.json'
+
+export default function accessor(key) {
+  if (typeof key === 'string') {
+    return env[key]
+  }
+  return env
+}
+```
+
+There are many other ways of storing our application settings, each with their pros and cons. The approach we just discussed, though, is relatively easy to implement and solid enough to get started. As an upgrade, you might want to look into using AWS Secrets Manager. That way, you'd have a single secret to take care of in team members' environments, instead of every single secret. A secret service also takes care of encryption, secure storage, secret rotation (useful in the case of a data breach), among other advanced features.
+
 ==== 6.2 Explicit Dependency Management
 
 It's not practical to include dependencies in our repositories, given these are often in the hundreds of megabytes and often include environment-dependant and operating system dependant files. During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve bugs and tighten our grip around security vulnerabilities. For deployments, we want reproducible builds, where installing our dependencies yields the same results every time. The solution is often to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through the Yarn package manager and its `yarn.lock` manifest, both of which we should be publishing to our versioned repository.
