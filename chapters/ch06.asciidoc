@@ -42,6 +42,8 @@ There's an npm package called `nconf` which we can use to handle reading and mer
 
 The following piece of code shows how you could configure `nconf` to do what we've just described.
 
+We import the `nconf` package, and declare configuration sources from highest priority to lowest priority, while `nconf` will do the merging (higher priority settings will always take precedence). We then set the actual `NODE_ENV` environment variable, because libraries often rely on this property to decide whether to instrument or optimize their output.
+
 ```
 // env
 import nconf from 'nconf'
@@ -90,8 +92,10 @@ Then, we could write a tiny script like the following to print all of those sett
 
 ```
 // print-browser-env
-import env from './lib/env'
-console.log(env('BROWSER_ENV'))
+import env from './env'
+const browserEnv = env('BROWSER_ENV')
+const prettyJson = JSON.stringify(browserEnv, null, 2)
+console.log(prettyJson)
 ```
 
 Naturally, we don't want to mix server-side settings with browser settings, because browser settings are usually accessible to anyone with a user agent, the ability to visit our website, and basic programming skills, meaning we would do well not to bundle highly sensitive secrets with our client-side applications. To resolve the issue, we can have a build step that prints the settings for the appropriate environment to an `.env.browser.json` file, and then only use that file on the client-side.
@@ -103,7 +107,7 @@ node print-browser-env
 Furthermore, we should replicate the `env` file from the server-side in the client-side, so that application settings are consumed in much of the same way in both sides of the wire.
 
 ```
-// client/env
+// browser/env
 import env from './env.browser.json'
 
 export default function accessor(key) {
@@ -114,7 +118,7 @@ export default function accessor(key) {
 }
 ```
 
-There are many other ways of storing our application settings, each with their pros and cons. The approach we just discussed, though, is relatively easy to implement and solid enough to get started. As an upgrade, you might want to look into using AWS Secrets Manager. That way, you'd have a single secret to take care of in team members' environments, instead of every single secret.
+There are many other ways of storing our application settings, each with their own associated pros and cons. The approach we just discussed, though, is relatively easy to implement and solid enough to get started. As an upgrade, you might want to look into using AWS Secrets Manager. That way, you'd have a single secret to take care of in team members' environments, instead of every single secret.
 
 A secret service also takes care of encryption, secure storage, secret rotation (useful in the case of a data breach), among other advanced features.
 
