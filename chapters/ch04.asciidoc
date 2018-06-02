@@ -1,7 +1,7 @@
 [[shaping-internals]]
 == Shaping Internals
 
-Thus far we've addressed modular design and API design concerns from a high level perspective, but avoided plunging into the deep end of implementation details. In contrast, this chapter is devoted to advice and concrete actions we can take to improve the quality of our component implementations. We'll discuss complexity, ways to remediate it, the perils of state, and how to better leverage data structures.
+Thus far we've addressed modular design and API design concerns from a high-level perspective, but avoided plunging into the deep end of implementation details. In contrast, this chapter is devoted to advice and concrete actions we can take to improve the quality of our component implementations. We'll discuss complexity, ways to remediate it, the perils of state, and how to better leverage data structures.
 
 === 4.1 Internal Complexity
 
@@ -109,11 +109,12 @@ We could've used more variables without creating a function, inlining the comput
 [source,javascript]
 ----
 const hasToken = auth === undefined || auth.token === undefined
-const hasValidToken = hasToken ? auth.expires > Date.now() : false
+const hasValidToken = hasToken && auth.expires > Date.now()
 if (hasValidToken) {
   return
 }
 ----
+
 
 Both of these options have their downsides. If we couple the return statements with the parent function, we'll need to be careful if we want to replicate the logic elsewhere, as the return statements and possibly their logic will have to adapt as well. If we decide to use ternary operators as a way of short-circuiting, we'll end up with logic that might be as complex as what we originally had in the `if` statement.
 
@@ -177,7 +178,7 @@ var double = function(x) {
 }
 ----
 
-Furthermore, if we're dealing with a `let` or `const` binding, then TDZ semantics will produce an error if we reference the binding at all before the variable declaration statement is reached.
+Furthermore, if we're dealing with a `let` or `const` binding, then TDZ semantics produce an error if we reference the binding at all before the variable declaration statement is reached.
 
 [source,javascript]
 ----
@@ -197,21 +198,21 @@ function double(x) {
 }
 ----
 
-Now, we mentioned texts are written sequentially, and how the writers avoids surprises by presenting concepts before discussing them. Establishing a context in a program is a different endeavor, however. If we have a module that has the goal of rendering a chart with user engagement statistics, the top of the function should address things the reader already knows, namely the high level flow for what the rendering function is meant to do: analyze the data, construct some data views and model that data into something we can feed into a visualization library that then renders the desired chart.
+Now, we mentioned texts are written sequentially, and how the writers avoids surprises by presenting concepts before discussing them. Establishing a context in a program is a different endeavor, however. If we have a module that has the goal of rendering a chart with user engagement statistics, the top of the function should address things the reader already knows, namely the high-level flow for what the rendering function is meant to do: analyze the data, construct some data views and model that data into something we can feed into a visualization library that then renders the desired chart.
 
-What we have to avoid is jumping directly into unimportant functions such as a data point label formatter, or the specifics of the data modelling. By keeping only the high level flow near the top, and the specifics towards the end, complex functionality can be designed in such a way that the reader experiences a zoomed out overview of the functionality at first, and as they read the code they uncover the details of how this chart was implemented.
+What we have to avoid is jumping directly into unimportant functions such as a data point label formatter, or the specifics of the data modelling. By keeping only the high-level flow near the top, and the specifics towards the end, complex functionality can be designed in such a way that the reader experiences a zoomed out overview of the functionality at first, and as they read the code they uncover the details of how this chart was implemented.
 
 In a concrete sense, this means we should present functions in a codebase in the order that they'll be read by the consumer (a first-in first-out queue), and not in the execution order (a last-in first-out stack). While computers do as they're told and dig ever deeper into the flow, executing the most deeply nested routines before jumping out of a series of subroutines and executing the next line, this is an unfruitful way for humans to read a codebase, given we're ill-suited to keeping all that state in our heads.
 
-Perhaps a more specific analogy for this kind of spiraling approach can be found in newspaper articles, where the author typically offers a title that describes an event at the highest possible level, and then follows up with a lead paragraph that summarizes what happened, again at a high level. The body of the article starts also at a high level, carefully avoiding to spook the reader with too many details. It is only midway through the article that we'll start finding details about the event which, aided by the context set forth in the beginning of the article, can give us a complete picture of what transpired.
+Perhaps a more specific analogy for this kind of spiraling approach can be found in newspaper articles, where the author typically offers a title that describes an event at the highest possible level, and then follows up with a lead paragraph that summarizes what happened, again at a high-level. The body of the article starts also at a high-level, carefully avoiding to spook the reader with too many details. It is only midway through the article that we'll start finding details about the event which, aided by the context set forth in the beginning of the article, can give us a complete picture of what transpired.
 
-Given the stack-based nature of programming, it's not that easy to naturally approach programs as if they were newspaper articles. We can, however, defer execution of implementation details to other functions or subroutines, and thanks to hoisting, we can place those subroutines after their higher level counterparts. In doing so, we're organizing our programs in a way that invites readers in, shows them a few high level hints, and then gradually unveils the spooky details of how a feature is implemented.
+Given the stack-based nature of programming, it's not that easy to naturally approach programs as if they were newspaper articles. We can, however, defer execution of implementation details to other functions or subroutines, and thanks to hoisting, we can place those subroutines after their higher level counterparts. In doing so, we're organizing our programs in a way that invites readers in, shows them a few high-level hints, and then gradually unveils the spooky details of how a feature is implemented.
 
 ==== 4.2.4 Extracting Functions
 
 Deliberate, pyramidal structures where we deal with higher level concerns near the top and switch to more specific problems as we go deeper into the inner workings of a system works wonders in keeping complexity on a tight leash. Such structures are particularly powerful because they break up complex items into their own individual units near the flat bottom of the system, avoiding a complicated interweaving of concerns that are fuzzied together, becoming undistinguishable from one another over time.
 
-Pushing anything that gets in the way of the current flow to the bottom of a function is an effective way of streamlining readability. As an example, consider the case where we have a non-trivial mapper inline in the heart of a function. In the following code snippet we're mapping the users into user models, as we often need to do when we prepare JSON responses for API calls.
+Pushing anything that gets in the way of the current flow to the bottom of a function is an effective way of streamlining readability. As an example, consider the case where we have a non-trivial mapper inline in the heart of a function. In the following code snippet we're mapping the users into user models, as we often need to do when preparing JSON responses for API calls.
 
 [source,javascript]
 ----
@@ -298,7 +299,7 @@ function getUserWebsite(user) {
 }
 ----
 
-When we want to name an aspect of a routine without adding a comment, we could create a function to host that functionality. Doing so doesn't just give a name to what the algorithm is doing, but it also allows us to push that code out of the way, leaving behind only the high level description of what's going to happen.
+When we want to name an aspect of a routine without adding a comment, we could create a function to host that functionality. Doing so doesn't just give a name to what the algorithm is doing, but it also allows us to push that code out of the way, leaving behind only the high-level description of what's going to happen.
 
 ==== 4.2.5 Flattening Nested Callbacks
 
@@ -417,7 +418,7 @@ We've already discussed at length why creating abstractions isn't always the bes
 
 When we do avoid creating abstractions prematurely, we'll start noticing functions that have an uncanny resemblance to the shape of similar functions: maybe the flow is identical, maybe the output is similar, or maybe all that really changes is we're accessing an attribute named `href` in one case and an attribute named `src` in another case.
 
-Consider the case of an HTML crawler which needs to pull out snippets of an HTML page and reuse them later in a different context. Among other things, this crawler will need to take relative resource locators like `/weekly` and resolve them to absolute endpoints like `https://ponyfoo.com/weekly`, depending on the origin where the resource was crawled from. This way, the HTML snippets can then be repurposed on other mediums such as on a different origin or a PDF file, without breaking the end-user experience.
+Consider the case of an HTML crawler which needs to pull out snippets of an HTML page and reuse them later in a different context. Among other things, this crawler needs to take relative resource locators like `/weekly` and resolve them to absolute endpoints like `https://ponyfoo.com/weekly`, depending on the origin where the resource was crawled from. This way, the HTML snippets can then be repurposed on other mediums such as on a different origin or a PDF file, without breaking the end-user experience.
 
 The following piece of code takes a piece of HTML and transforms `a[href]` and `img[src]` into absolute endpoints using the `$` jQuery-like DOM utility library.
 
@@ -590,7 +591,7 @@ const successfulMovies = movieModels.filter(
 )
 ----
 
-Thanks to us making fresh copies of the objects we're working with, we've preserved the `movies` collection intact. If we now assume that `movies` was an input to our function, we could say that modifying any movie in that collection would've made our function impure, since it'd have the side-effect of unexpectedly altering the input.
+Thanks to us making fresh copies of the objects we're working with, we've preserved the `movies` collection. If we now assume that `movies` was an input to our function, we could say that modifying any movie in that collection would've made our function impure, since it'd have the side-effect of unexpectedly altering the input.
 
 By introducing immutability, we've kept the function pure. That means that its output only depends on its inputs, and that we don't create any side-effects such as changing the inputs themselves. This in turn guarantees that the function is idempotent, where calling a function repeatedly with the same input always produces the same result, given the output depends solely on the inputs and there are no side-effects. In contrast, the idempotence property would've been brought into question if we had tainted the input by adding a `profit` field to every movie.
 
@@ -632,7 +633,26 @@ An array-based list is great whenever we need to sort the list or map its object
 }
 ----
 
-The data structure we pick will constrain and determine the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures. It's usually well worth it to transform data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
+Using `Map` we could create a similar structure and benefit from the native `Map` API as well.
+
+[source,javascript]
+----
+new Map([
+  ['understanding-javascript-async-await', {
+    slug: 'understanding-javascript-async-await',
+    title: 'Understanding JavaScript’s async await',
+    contents: '…'
+  }],
+  ['pattern-matching-in-ecmascript', {
+    slug: 'pattern-matching-in-ecmascript',
+    title: 'Pattern Matching in ECMAScript',
+    contents: '…'
+  }],
+  …
+])
+----
+
+The data structure we pick constrains and determines the shape our API can take. Complex programs are often, in no small part, the end result of combining poor data structures with new or unforeseen requirements that don't exactly fit in well with those structures. It's usually well worth it to transform data into something that's amenable to the task at hand, so that the algorithm is simplified by making the data easier to consume.
 
 Now, we can't possibly foresee all scenarios when coming up with the data structure we'll use at first, but what we can do is create intermediate representations of the same underlying data using new structures that do fit the new requirements. We can then leverage these structures, which were optimized for the new requirements, when writing code to fulfill those requirements. The alternative, resorting to the original data structure when writing new code that doesn't quite fit with it, will invariably result in logic that has to work around the limitations of the existing data structure, and as a result we'll end up with less than ideal code, that might take some effort understanding and updating.
 

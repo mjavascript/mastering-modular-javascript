@@ -264,9 +264,9 @@ This is akin to how some libraries were written in the days before JavaScript ha
 })()
 ----
 
-When exposing touchpoints on an interface, it's important to gauge if consumers will need the touchpoint at all, how it helps them, and whether it could be made simpler. For instance, it might be the case that instead of exposing several different touchpoints the user can pick from, they'd be better off with a single touchpoint that leverages the appropriate code path based on provided inputs while, at the same time, the component would couple a smaller part of its implementation to its interface.
+When exposing touchpoints on an interface, it's important to gauge if consumers need the touchpoint at all, how it helps them, and whether it could be made simpler. For instance, it might be the case that instead of exposing several different touchpoints the user can pick from, they're be better off with a single touchpoint that leverages the appropriate code path based on provided inputs while, at the same time, the component would couple a smaller part of its implementation to its interface.
 
-Thinking in API-first terms can help, because then we'd have a decent idea of the kind of API surface we want, and armed with that we can decide how we want to allow consumers to interact with the component.
+Thinking in API-first terms can help, because then we have a decent idea of the kind of API surface we want, and armed with that we can decide how we want to allow consumers to interact with the component.
 
 As new use cases arise and our component system grows, we should stick to an API-first mindset and the revealing pattern, so that the component doesn't suddenly become more complex. Gradually introducing complexity can help us design the right interface for our component. One where we don't offer every solution imaginable, but also one where we elegantly solve the consumer's use cases, provided they fall within the responsibility of our component.
 
@@ -276,7 +276,7 @@ Open-source software components often get feature requests that are overly speci
 
 Granted, it's important for a component to satisfy the needs of most of its consumers, but this doesn't mean we should attempt to satisfy use cases one by one, or in isolation. Almost invariably, doing so results in duplicated logic, inconsistency at the API level, and several different ways of accomplishing the same goal, often with inconsistent observed results.
 
-When a commonality can be found, abstractions involve less friction and help avoid the inconsistencies named earlier. Consider for example the case of DOM event listeners, where we have an HTML attribute and matching JavaScript DOM element property for each event, such as `onclick`, `onchange`, `oninput`, and so on. Each of these properties can be assigned a `listener` function that handles the event. Then there's `EventTarget#addEventListener`, which has a signature like `addEventListener(type, listener, options)`​footnoteref:[addeventlistener-options,The `options` parameter is an optional configuration object -- that's relatively new to the Web API -- where we can set flags such as `capture`, which has the same behavior as passing a `useCapture` flag; `passive`, which suppresses calls to `event.preventDefault()` in the `listener`; and `once`, which indicates the event listener should be removed after being invoked for the first time.], centralizing all event handling logic in a single method that takes the `type` of event as a parameter. Naturally, this API is better for a number of reasons. First off, `EventTarget#addEventListener` is a method, making its behavior clearly defined. Meanwhile `on*` handlers are set through assignment, which isn't as clearly defined: when does the effect of assigning an event handler begin? how is the handler removed? are we limited to a single event handler or is there a way around it? are we going to get an error when we assign a non-function value as an event listener, will the raised event result in an error when trying to invoke the non-function? Furthermore, new event types can be added transparently to `addEventListener`, without having to change the API surface, whereas with the `on*` technique we would have to introduce yet another property.
+When a commonality can be found, abstractions involve less friction and help avoid the inconsistencies named earlier. Consider for example the case of DOM event listeners, where we have an HTML attribute and matching JavaScript DOM element property for each event handler, such as `onclick`, `onchange`, `oninput`, and so on. Each of these properties can be assigned a `listener` function that handles the event. Then there's `EventTarget#addEventListener`, which has a signature like `addEventListener(type, listener, options)`​footnoteref:[addeventlistener-options,The `options` parameter is an optional configuration object -- that's relatively new to the Web API -- where we can set flags such as `capture`, which has the same behavior as passing a `useCapture` flag; `passive`, which suppresses calls to `event.preventDefault()` in the `listener`; and `once`, which indicates the event listener should be removed after being invoked for the first time.], centralizing all event handling logic in a single method that takes the `type` of event as a parameter. Naturally, this API is better for a number of reasons. First off, `EventTarget#addEventListener` is a method, making its behavior clearly defined. Meanwhile `on*` handlers are set through assignment, which isn't as clearly defined: when does the effect of assigning an event handler begin? how is the handler removed? are we limited to a single event handler or is there a way around it? are we going to get an error when we assign a non-function value as an event listener, will the raised event result in an error when trying to invoke the non-function? Furthermore, new event types can be added transparently to `addEventListener`, without having to change the API surface, whereas with the `on*` technique we would have to introduce yet another property.
 
 Another case where abstractions come in handy might be whenever we are dealing with quirks in cross-browser DOM manipulation. Having a function like `on(element, eventType, eventListener)` would be superior than testing whether `addEventListener` is supported and deciding which of the various event listening options is optimal for each case, every time, as it drastically reduces code duplication while also handling every case consistently, limiting complexity.
 
@@ -296,7 +296,7 @@ Besides state for an individual user and application-wide state, there's also th
 
 We shall think of state as our program's internal entropy. When state reigns, entropy reigns, and the application becomes unbearably hard to debug. One of the goals in modular design is to keep state to the minimum possible. As an application grows larger so does its state and the possible state permutations grow with it. Modularity takes aim at this issue by chopping a state tree into manageable bits and pieces, where each branch of the tree deals with a particular subset of the state. This approach enables us to contain the growing application state as our codebase grows in size.
 
-A function is deemed pure when it's output depends solely on its input. Pure functions do not produce any side effects other than the output that's returned. In the following example, the `sum` function receives a list of `numbers` and returns the sum of adding all of them together. It is a pure function because it doesn't take into account any external state, and it doesn't emit any side effects.
+A function is deemed pure when its output depends solely on its input. Pure functions do not produce any side effects other than the output that's returned. In the following example, the `sum` function receives a list of `numbers` and returns the sum of adding all of them together. It is a pure function because it doesn't take into account any external state, and it doesn't emit any side effects.
 
 [source,javascript]
 ----
@@ -305,7 +305,7 @@ function sum(numbers) {
 }
 ----
 
-Sometimes we'll have a requirement to keep state across function calls. For instance, a simple incremental counter might lead to us to implement a module such as the following. The `increment` function isn't pure, given that `count` is external state.
+Sometimes we have a requirement to keep state across function calls. For instance, a simple incremental counter might lead to us to implement a module such as the following. The `increment` function isn't pure, given that `count` is external state.
 
 [source,javascript]
 ----
@@ -328,7 +328,7 @@ const factory = () => {
 export default factory
 ----
 
-As long as we limit the usage of each counter spewed by the `factory` to a given portion of the application which knows about each other usage, the state becomes more manageable, as we end up with less moving parts involved. When we eliminate impurity in public interfaces, we're effectively circumscribing entropy to the calling code. The consumer receives a brand new counter every time, and it's entirely responsible for managing its state. It can still pass the `counter` down to its dependents, but it's in control of how dependents get to manipulate that state, if at all.
+As long as we limit the usage of each counter spewed by the `factory` to a given portion of the application which knows about each other usage, the state becomes more manageable, as we end up with fewer moving parts involved. When we eliminate impurity in public interfaces, we're effectively circumscribing entropy to the calling code. The consumer receives a brand new counter every time, and it's entirely responsible for managing its state. It can still pass the `counter` down to its dependents, but it's in control of how dependents get to manipulate that state, if at all.
 
 This is something we observe in the wild, with popular libraries such as the `request` packagefootnote:[You can find `request` here: https://mjavascript.com/out/request.] in Node.js, which can be used to make HTTP requests. The `request` function relies largely on sensible defaults for the `options` you can pass to it. Sometimes, we want to make requests using a different set of defaults.
 
@@ -374,17 +374,17 @@ One prominent example of flexible inputs can be found in the jQuery library. Wit
 - `$(html, attributes)`
 - `$(callback)`
 
-Though it's not uncommon for JavaScript libraries to offer a getter and a setter as overloads of the same method, API methods should generally have a single, well defined responsibility. Most of the time, this translates into clean-cut API design. In the case of the dollar function, we have three different use cases.
+Though it's not uncommon for JavaScript libraries to offer a getter and a setter as overloads of the same method, API methods should generally have a single, well-defined responsibility. Most of the time, this translates into clean-cut API design. In the case of the dollar function, we have three different use cases.
 
 - `$(callback)` binds a function to be executed when the DOM has finished loading
 - `$(html)` overloads create elements out of the provided `html`
 - Every other overload matches elements in the DOM against the provided input
 
-While we might consider selectors and element creation to play the role of getters and setters, the `$(callback)` overload feels out of place. We need to take a step back and realize that jQuery is a decade old library which revolutionized front-end development due -- in no small part -- to its ease of use. Back in the day, the requirement to wait for DOM ready was in heavy demand and so it made sense to promote it to the dollar function. Needless to say, jQuery is quite a unique case, but it's nevertheless an excellent example of how providing multiple overloads can result in a dead simple interface, even when there's more overloads than the user can keep in the back of their heads. Most methods in jQuery offer several ways for consumers to present inputs without altering the responsibilities of those methods.
+While we might consider selectors and element creation to play the role of getters and setters, the `$(callback)` overload feels out of place. We need to take a step back and realize that jQuery is a decade-old library which revolutionized front-end development due -- in no small part -- to its ease of use. Back in the day, the requirement to wait for DOM ready was in heavy demand and so it made sense to promote it to the dollar function. Needless to say, jQuery is quite a unique case, but it's nevertheless an excellent example of how providing multiple overloads can result in a dead simple interface, even when there's more overloads than the user can keep in the back of their heads. Most methods in jQuery offer several ways for consumers to present inputs without altering the responsibilities of those methods.
 
 A new library with a shape similar to jQuery would be a rare find. Modern JavaScript libraries and applications favor a more modular approach, and so the DOM ready callback would be its own function, and probably its own package. There's still insight to be had by analyzing jQuery, though. This library had great user experience due to its consistency. One of the choices in jQuery was not to throw errors, which were reserved for bugs, user errors in our own code, or invalid selectors, in order to avoid frustrated users. Whenever jQuery finds an inappropriate input parameter, it prefers to return an empty list of matches instead. Silent failures can however be tricky: they might leave the consumer without any cues as to what the problem is, wondering whether it's an issue in their code, a bug in the library they're using, or something else.
 
-Even when a library is as flexible as jQuery is, it's important to identify invalid input early. As an example, the next snippet shows how jQuery will throw an error on selectors it can't parse.
+Even when a library is as flexible as jQuery is, it's important to identify invalid input early. As an example, the next snippet shows how jQuery throws an error on selectors it can't parse.
 
 [source,javascript]
 ----
@@ -398,8 +398,10 @@ A good example of optional parameters is the native DOM `fetch` API. In the next
 
 [source,javascript]
 ----
-fetch('/api/users')
-fetch('/api/users/rob', { method: 'DELETE' })
+await fetch('/api/users')
+await fetch('/api/users/rob', {
+  method: 'DELETE'
+})
 ----
 
 Supposing that -- if we were the API designers for `fetch` -- we originally devised `fetch` as just a way of doing `GET ${ resource }`. When we got a requirement for a way of choosing the HTTP method, we could've avoided the options object and reached directly for a `fetch(resource, method)` overload. While this would've served our particular requirement, it would've been short-sighted. As soon as we got a requirement to configure something else, we'd be left with the need of supporting both `fetch(resource, method)` and `fetch(resource, options)` overloads, so that we avoid breaking backward compatibility. Worse still, we might be tempted to introduce a third parameter that configures our next requirement. Soon, we'd end up with an API such as the infamous `KeyboardEvent#initKeyEvent` methodfootnote:[See the MDN documentation at https://mjavascript.com/out/initkeyevent.], whose signature is outlined below.
@@ -427,15 +429,15 @@ A key aspect of API design is readability. How far can users get without having 
 - The consumer doesn't need to concern herself with options they don't need
 - Developers reading pieces of code which consume the API can immediately understand what parameters are being used, since they're explicitly named in the options object
 
-As we make progress, we'll keep naturally coming back to the `options` object in API design.
+As we make progress, we keep naturally coming back to the `options` object in API design.
 
 ==== 2.2.3 Unambiguity
 
 The output shape for a function shouldn't depend on how it received its input or the result that was produced. This rule is almost universally agreed upon: you should aim to surprise consumers of your API as little as possible. There are a couple of cases where we may slip up and end up with an ambiguous API. For the same kind of result, we should return the same kind of output.
 
-For instance, `Array#find` always returns `undefined` when it doesn't find any items that match the provided predicate function. If it instead returned `null` when the array is empty, for example, that'd be inconsistent and wrong. We'd be making the consumer unsure about whether they should test for `undefined` or `null`, and they might end up being tempted to use loose equality comparison because of that uncertainty.
+For instance, `Array#find` always returns `undefined` when it doesn't find any items that match the provided predicate function. If it instead returned `null` when the array is empty, for example, that'd be inconsistent with other use cases, and thus wrong. We'd be making the consumer unsure about whether they should test for `undefined` or `null`, and they might end up being tempted to use loose equality comparison because of that uncertainty, given `== null` matches both `null` and `undefined`.
 
-On the same vein, we should avoid optional input parameters which transform the result into a different data type. Favor composability -- or a new method -- instead, where possible. An option which decides whether a raw object such as a `Date` or a DOM element should be  wrapped in an instance of jQuery or similar libraries such as `moment` before returning the result, or a `json` option which causes the result to be a JSON string when `true` and an object otherwise is ill-advised, unless there are technical reasons why we must do so.
+On the same vein, we should avoid optional input parameters which transform the result into a different data type. Favor composability -- or a new method -- instead, where possible. An option which decides whether a raw object such as a `Date` or a DOM element should be  wrapped in an instance of jQuery or similar libraries such as `moment` before returning the result, or a `json` option which causes the result to be a JSON-formatted string when `true` and an object otherwise is ill-advised, unless there are technical reasons why we must do so.
 
 It isn't necessary to treat failure and success with the same response shape, meaning that failure results can always be `null` or `undefined`, while success results might be an array list. However, consistency should be required across all failure cases and across all sucess cases, respectively.
 
@@ -447,9 +449,8 @@ Note how simple it is to use `fetch` in the simplest case: it receives the resou
 
 [source,javascript]
 ----
-fetch('/api/users/john').then(res => {
-  console.log(res.statusCode)
-})
+const res = await fetch('/api/users/john')
+console.log(res.statusCode)
 // <- 200
 ----
 
@@ -457,11 +458,9 @@ If we want to take things a bit further, we can chain onto the response object t
 
 [source,javascript]
 ----
-fetch('/api/users/john')
-  .then(res => res.json())
-  .then(data => {
-    console.log(data.name)
-  })
+const res = await fetch('/api/users/john')
+const data = res.json()
+console.log(data.name)
 // <- 'John Doe'
 ----
 
@@ -469,10 +468,12 @@ If we instead wanted to remove the user, we need to provide the `method` option.
 
 [source,javascript]
 ----
-fetch('/api/users/john', { method: `DELETE` })
+await fetch('/api/users/john', {
+  method: `DELETE`
+})
 ----
 
-The `fetch` function can't do much without a specified resource, which is why this parameter is required and not part of an options object. Having sensible defaults for every other parameter is a key component of keeping the `fetch` interface simple. The `method` defaults to `GET`, which is the most common HTTP verb and thus the one we're most likely to use. Good defaults are conservative, and good options are additive. The `fetch` function doesn't transmit any cookies by default -- a conservative default -- but a `credentials` option set to `include` will make cookies work -- an additive option.
+The `fetch` function can't do much without a specified resource, which is why this parameter is required and not part of an options object. Having sensible defaults for every other parameter is a key component of keeping the `fetch` interface simple. The `method` defaults to `GET`, which is the most common HTTP verb and thus the one we're most likely to use. Good defaults are conservative, and good options are additive. The `fetch` function doesn't transmit any cookies by default -- a conservative default -- but a `credentials` option set to `include` makes cookies work -- an additive option.
 
 In another example, we could implement a Markdown compiler function with a default option that supports autolinking resource locators, which can be disabled by the consumer with an `autolinking: false` option. In this case, the implicit default would be `autolinking: true`. Negated option names such as `avoidAutolinking` are sometimes justified because they make it so that the default value is `false`, which on the surface sounds correct for options that aren't user-provided. Negated options however tend to confuse users who are confronted with the double negative in `avoidAutolinking: false`. It's best to use additive or positive options, preventing the double negative: `autolinking: true`.
 
@@ -484,7 +485,7 @@ Any interface benefits from being its smallest possible self. A small surface ar
 
 The malleability of an interface depends on the way it is consumed. Functions and variables that are private to a module are only depended upon by other parts of that module, and are thus highly malleable. The bits that make up the public API of a module are not as malleable, since we might need to change the way each dependant uses our module. If those bits make up the public API of the package, then we're looking at bumping our library's version so that we can safely break its public API without major and unexpected repercussions.
 
-Not all changes are breaking changes, however. We might learn from an interface like the one in `fetch`, for example, which remains highly malleable even in the face of change. Even though the interface is tiny for it's simplest use case, -- `GET /resource` -- the `options` parameter can grow by leaps and bounds without causing trouble for consumers, while extending the capabilities of `fetch`.
+Not all changes are breaking changes, however. We might learn from an interface like the one in `fetch`, for example, which remains highly malleable even in the face of change. Even though the interface is tiny for its simplest use case, -- `GET /resource` -- the `options` parameter can grow by leaps and bounds without causing trouble for consumers, while extending the capabilities of `fetch`.
 
 We can avoid creating interfaces that contain several slightly different solutions for similar problems by holistically designing the interface to solve the underlying common denominator, maximizing the reusability of a component's internals in the process.
 
