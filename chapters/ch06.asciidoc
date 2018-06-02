@@ -7,7 +7,7 @@ In this chapter we'll explore open-source principles and look at ways in which w
 
 === 6.1 Secure Configuration Management
 
-When it comes to configuration secrets in closed-source projects, like API keys or HTTP session decryption keys, it is not uncommon for them to be hardcoded in place. In open-source projects, instead, these are typically instead obtained through environment variables or encrypted configuration files that aren't committed to version control systems alongside our codebase.
+When it comes to configuration secrets in closed-source projects, like API keys or HTTP session decryption keys, it is not uncommon for them to be hard-coded in place. In open-source projects, instead, these are typically instead obtained through environment variables or encrypted configuration files that aren't committed to version control systems alongside our codebase.
 
 In the case of open-source projects, this allows the developer to share the vast majority of their application without compromising the security of their production systems. While this might not be an immediate concern in closed-source environments, we need to consider that once a secret is committed to version control, it's etched into our version history unless we force a rewrite of that history, scrubbing the secrets from existence. Even then, it cannot be guaranteed that a malicious actor has gained access to these secrets at some point before they were scrubbed from history, and thus a better solution to this problem is rotating the secrets that might be compromised, revoking access through the old secrets and starting to use new, uncompromised secrets.
 
