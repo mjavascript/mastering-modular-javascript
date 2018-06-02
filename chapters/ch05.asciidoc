@@ -99,7 +99,7 @@ const {
 } = response
 ----
 
-When using `:` to alias, it can be difficult at first to remember whether the original name, or the aliased name comes first. One helpful way to keep this straight is to mentally replace `:` with the word "as."  So `name: responseContactName` would read as "name as responseContactName." 
+When using `:` to alias, it can be difficult at first to remember whether the original name or the aliased name comes first. One helpful way to keep it straight is to mentally replace `:` with the word "as".  That way, `name: responseContactName` would read as "name as responseContactName".
 
 We can even have the same property listed twice, if we wanted to destructure some of its contents, while also maintaining access to the object itself.  For example, if we wanted to destructure the `contact` object's contents, like we do above, but also take a reference to the whole `contact` object, we can do the following
 
@@ -188,16 +188,6 @@ A better approach would be to create new bindings every time, computing their va
 const initialValues = [1, 2, 3, 4, 5]
 const doubledValues = initialValues.map(value => value * 2)
 const finalValues = doubledValues.filter(value => value > 5)
-// <- [6, 8, 10]
-----
-
-NOTE - this doesn't make sense.  The original example assigned to the SAME variable over and over again.  Wouldn't the simplified, equivalent code just chain the subsequent calls?
-
-[source,javascript]
-----
-let values = [1, 2, 3, 4, 5]
-  .map(value => value * 2)
-  .filter(value => value > 5)
 // <- [6, 8, 10]
 ----
 
@@ -490,26 +480,24 @@ Having event listeners allowed a component to receive a message, perhaps process
 
 ==== 5.3.4 Message Passing and the Simplicity of JSON
 
-When it comes to ServiceWorker, web workers, browser extensions, frames, API calls, or WebSocket integrations, we might run into issues if we don't plan for robust data serialization ahead of time. This is a place where using classes to represent data can break down, because we need a way to serialize class instances into raw data (typically JSON) before sending over the wire, and, crucially, the recipient needs to decode this JSON back into a class instance. It's the second part where classes start to fail, since there isn't a standardized way of reconstructing a class instance from JSON. For example
+When it comes to ServiceWorker, web workers, browser extensions, frames, API calls, or WebSocket integrations, we might run into issues if we don't plan for robust data serialization ahead of time. This is a place where using classes to represent data can break down, because we need a way to serialize class instances into raw data (typically JSON) before sending it over the wire, and, crucially, the recipient needs to decode this JSON back into a class instance. It's the second part where classes start to fail, since there isn't a standardized way of reconstructing a class instance from JSON. For example:
 
 [source,javascript]
 ----
-class Person{
-  constructor(name, address){
-    this.name = name;
-    this.address = address;
+class Person {
+  constructor(name, address) {
+    this.name = name
+    this.address = address
   }
-  speak(){
-    alert(`My name is ${this.name}`);
+  greet() {
+    console.log(`Hi! My name is ${ this.name }.`)
   }
 }
 
-let nico = new Person("Nico", "123 Main St");
+const rwanda = new Person('Rwanda', '123 Main St')
 ----
 
-Although we can easily serialize our `nico` instance with `JSON.stringify(nico);`, and then send it over the wire, the code on the other end will have no standard way of turning this JSON back into an instance of our `Person` class.
-
-NOTE: then again, can you clarify why the receiving end would need to deserialize the data back into class instances, rather than just use raw object literals?  Assymetric representations of the same data is likely uglfy, and needlessly complex, and so possibly the only reason, and a good one, but it might be worth spelling out explicitly.
+Although we can easily serialize our `rwanda` instance with `JSON.stringify(rwanda)`, and then send it over the wire, the code on the other end will have no standard way of turning this JSON back into an instance of our `Person` class, which might have a lot more functionality than merely a `greet` function. The receiving end might have no business deserializing this data back into the class instance it originated from, but in some cases there's merit to having an exact replica object back on the other end. For example, to reduce friction when passing messages between a website and a web worker, both sides should be dealing in the same data structure. In such scenario, simple JavaScript objects are ideal.
 
 JSON, a subset of the JavaScript grammar, was purpose-built for this use case, where we often have to serialize data, send it over the wire, and deserialize it on the other end. Plain JavaScript objects are a great way to store data in our applications, offer frictionless serialization out the box, and lead to cleaner data structures because we can keep logic decoupled from the data.
 
