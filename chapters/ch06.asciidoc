@@ -152,6 +152,8 @@ Every dependency in our application should be explicitly declared in our manifes
 }
 ```
 
+Using the information in a package lock file, package managers can take steps to install the same bits every time, preserving our ability to quickly iterate and install package updates, while keeping our code safe.
+
 Always installing identical versions of our dependencies -- and identical versions of our dependencies' dependencies -- brings us one step closer to having development environments that closely mirror what we do in production. This increases the likelyhood we can swiftly reproduce bugs that occurred in production in our local environments, while decreasing the odds that something that worked during development fails in staging.
 
 ==== 6.3 Interfaces as Black Boxes
