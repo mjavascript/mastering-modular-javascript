@@ -124,9 +124,33 @@ A secret service also takes care of encryption, secure storage, secret rotation 
 
 ==== 6.2 Explicit Dependency Management
 
-It's not practical to include dependencies in our repositories, given these are often in the hundreds of megabytes and often include environment-dependant and operating system dependant files. During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve bugs and tighten our grip around security vulnerabilities. For deployments, we want reproducible builds, where installing our dependencies yields the same results every time. The solution is often to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through the Yarn package manager and its `yarn.lock` manifest, both of which we should be publishing to our versioned repository.
+It's not practical to include dependencies in our repositories, given these are often in the hundreds of megabytes and often include environment-dependant and operating system dependant files. During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve bugs and tighten our grip around security vulnerabilities. For deployments, we want reproducible builds, where installing our dependencies yields the same results every time.
 
-Every dependency in our application should be explicitly declared in our manifest, relying on globally installed packages or global variables as little as possible. Implicit dependencies involve additional steps across environments, where developers and deployment flows alike must take action to ensure these extra dependencies are installed, beyond what a simple `npm install` step could achieve.
+The solution is often to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through Facebook's Yarn package manager and its `yarn.lock` manifest, both of which we should be publishing to our versioned repository.
+
+Using these manifests across environments ensures we get reproducible installs of our dependencies, meaning everyone working with the codebase -- as well as hosted environments -- deals with the same package versions, both at the top level (direct dependencies) and regardless the nesting depth (dependencies of dependencies -- of dependencies).
+
+Every dependency in our application should be explicitly declared in our manifest, relying on globally installed packages or global variables as little as possible. Implicit dependencies involve additional steps across environments, where developers and deployment flows alike must take action to ensure these extra dependencies are installed, beyond what a simple `npm install` step could achieve. Here's an example of how a `package-lock.json` file might look:
+
+```
+{
+  "name": "A",
+  "version": "0.1.0",
+  // metadata…
+  "dependencies": {
+    "B": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/B/-/B-0.0.1.tgz",
+      "integrity": "sha512-DeAdb33F+"
+      "dependencies": {
+        "C": {
+          "version": "git://github.com/org/C.git#5c380ae319fc4efe9e7f2d9c78b0faa588fd99b4"
+        }
+      }
+    }
+  }
+}
+```
 
 Always installing identical versions of our dependencies -- and identical versions of our dependencies' dependencies -- brings us one step closer to having development environments that closely mirror what we do in production. This increases the likelyhood we can swiftly reproduce bugs that occurred in production in our local environments, while decreasing the odds that something that worked during development fails in staging.
 

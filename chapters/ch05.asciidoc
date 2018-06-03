@@ -340,7 +340,7 @@ Another way of doing composition, that doesn't rely on decorators, is to rely on
 
 [source,javascript]
 ----
-const emitters = new Map()
+const emitters = new WeakMap()
 
 function onEvent(target, eventType, listener) {
   if (!emitters.has(target)) {
@@ -385,6 +385,8 @@ emitEvent(person, 'move', 23, 5)
 // <- 'Artemisa moved to [23, 5].'
 ----
 
+Note how we're using both `WeakMap` and `Map` here. Using a plain `Map` would prevent garbage collection from cleaning things up when `target` is only being referenced by `Map` entries, whereas `WeakMap` would allow garbage collection to take place. Given we usually want to attach events to objects, we can use `WeakMap` as a way to avoid creating strong references that might end up leading to memory leaks. On the other hand, it's okay to use a regular `Map` for the event listeners, given those are associated to an event type string.
+
 Let's move onto deciding whether to use inheritance, decorators, or functional composition, where each pattern shines, and when to avoid them.
 
 ==== 5.2.3 Choosing between Composition and Inheritance
@@ -409,7 +411,7 @@ The revealing module pattern has become a staple in the world of JavaScript. The
 
 Explicitly avoid exposing methods meant to be private, such as a hypothetical +_calculatePriceHistory+ method, which relies on the leading hyphen as a way of discouraging direct access and signaling that it should be regarded as private. Avoiding such methods prevents test code from accessing private methods directly, resulting in tests that make assertions solely regarding the interface and which can be later referenced as documentation on how to use the interface; prevents consumers from monkey-patching implementation details, leading to more transparent interfaces; and also often results in cleaner interfaces due to the fact that the interface is all there is, and there's no alternative ways of interacting with the module through direct use of its internals.
 
-JavaScript modules are of a revealing nature by default, making it easy for us to follow the revealing pattern of not giving away access to implementation details. Any function, object, class, or variable we declare is private unless we explicitly decide to `export` it from the module.
+JavaScript modules are of a revealing nature by default, making it easy for us to follow the revealing pattern of not giving away access to implementation details. Functions, objects, classes, and any other bindings we declare are private unless we explicitly decide to `export` them from the module.
 
 When we expose only a thin interface, our implementation can change largely without having an impact on how consumers use the module, nor on the tests that cover the module. As a mental exercise, always be on the lookout for aspects of an interface that should be turned into implementation details and extricated from the interface itself.
 
@@ -419,61 +421,98 @@ Even when using JavaScript modules and following the revealing pattern strictly,
 
 If we were to move our functional event emitter code snippet, with `onEvent` and `emitEvent`, into a JavaScript module, we'd notice that the `emitters` map is now a local global for that module, meaning all of the module's scope has access to `emitters`. This is what we'd want, because that way we can register event listeners in `onEvent` and fire them off in `emitEvent`. In most other situations, however, sharing persistent state across public interface methods is a recipe for unexpected bugs.
 
-Suppose we have a `StringBuilder` module that can be used to join strings in a performant manner. Even if consumers were supposed to use it synchronously and flush state in one fell swoop, without giving way for a second consumer to taint the state and produce unexpected results, our module shouldn't rely on consumer behavior to provide consistent results. The following contrived implementation relies on local shared state, and would need consumers to use the module strictly as intended, making all calls to `append` and `stringify` in sequence.
+Suppose we have a `calculator` module that can be used to make basic calculations through a stream of operations. Even if consumers were supposed to use it synchronously and flush state in one fell swoop, without giving way for a second consumer to taint the state and produce unexpected results, our module shouldn't rely on consumer behavior to provide consistent results. The following contrived implementation relies on local shared state, and would need consumers to use the module strictly as intended, making all calls to `add`, `multiply`, and `calculate` in sequence.
 
 [source,javascript]
 ----
-const buffer = []
+const operations = []
+let state = 0
 
-export function append(...text) {
-  buffer.push(...text)
+export function add(value) {
+  operations.push(() => {
+    state += value
+  })
 }
 
-export function stringify() {
-  return buffer.splice(0, buffer.length).join('')
+export function multiply(value) {
+  operations.push(() => {
+    state *= value
+  })
+}
+
+export function calculate() {
+  operations.forEach(op => op())
+  return state
 }
 ----
 
-Here's an example of how consuming the previous module could work. As soon as we try to asynchronously append text to the buffer, things start getting out of hand, with strings getting bits and pieces unrelated to what we expect.
+Here's an example of how consuming the previous module could work. As soon as we tried to asynchronously append text to the buffer, things would start getting out of hand, with the operations array getting bits and pieces of unrelated calculations, tainting our calculations.
 
 [source,javascript]
 ----
-const name = 'Sophie'
-append('hello')
-append(name)
-append(', it is nice to meet you!')
-stringify() // <- 'Hello Sophie, it is nice to meet you!'
+add(3)
+add(4)
+multiply(-2)
+calculate() // <- -14
 ----
 
-Blatantly, this contrived module is poorly designed, as its buffer should never be used to construct several unrelated strings. We should instead expose a factory function that returns an object from its own self-contained scope, where all relevant state is shut off from the outside world. The methods on this object are equivalent to the exported interface of a plain JavaScript module, but state mutations are contained to instances that consumers create.
+A slightly better approach would get rid of the `state` variable, and instead pass the state around operation handlers, so that each operation knows the current state, and applies any necessary changes to it. The `calculate` step would create a new initial state each time, and go from there.
 
 [source,javascript]
 ----
-function getStringBuilder() {
-  const buffer = []
+const operations = []
 
-  function append(...text) {
-    buffer.push(...text)
+export function add(value) {
+  operations.push(state => state + value)
+}
+
+export function multiply(value) {
+  operations.push(state => state * value)
+}
+
+export function calculate() {
+  return operations.reduce((result, op) =>
+    op(result)
+  , 0)
+}
+----
+
+This approach presents problems too, however. Even though the `state` will always be reset to `0`, we're treating unrelated operations as if they were all part of a whole, which is still wrong.
+
+Blatantly, this contrived module is poorly designed, as its operations buffer should never be used to drive several unrelated calculations. We should instead expose a factory function that returns an object from its own self-contained scope, where all relevant state is shut off from the outside world. The methods on this object are equivalent to the exported interface of a plain JavaScript module, but state mutations are contained to instances that consumers create.
+
+[source,javascript]
+----
+export function getCalculator() {
+  const operations = []
+
+  function add(value) {
+    operations.push(state => state + value)
   }
 
-  function stringify() {
-    return buffer.splice(0, buffer.length).join('')
+  function multiply(value) {
+    operations.push(state => state * value)
   }
 
-  return { append, stringify }
+  function calculate() {
+    return operations.reduce((result, op) =>
+      op(result)
+    , 0)
+  }
+
+  return { add, multiply, calculate }
 }
 ----
 
-Using the string builder like this is just as straightforward, except that now we can do things asynchronously and even if other consumers are also using string builders of their own, each user will have their own state, preventing corrupt data.
+Using the calculator like this is just as straightforward, except that now we can do things asynchronously and even if other consumers are also using string builders of their own, each user will have their own state, preventing data corruption.
 
 [source,javascript]
 ----
-const { append, stringify } = getStringBuilder()
-const name = 'Sophie'
-append('hello')
-append(name)
-append(', it is nice to meet you!')
-stringify() // <- 'Hello Sophie, it is nice to meet you!'
+const { append, stringify } = getCalculator()
+add(3)
+add(4)
+multiply(-2)
+calculate() // <- -14
 ----
 
 As we just showed, even when using modern language constructs and JavaScript modules, it's not too hard to create complications through shared state. Thus, we should always strive to contain mutable state as close to its consumers as possible.
