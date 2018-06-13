@@ -141,13 +141,17 @@ A secret service also takes care of encryption, secure storage, secret rotation 
 
 ==== 6.2 Explicit Dependency Management
 
-It's not practical to include dependencies in our repositories, given these are often in the hundreds of megabytes and often include environment-dependant and operating system dependant files. During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve bugs and tighten our grip around security vulnerabilities. For deployments, we want reproducible builds, where installing our dependencies yields the same results every time.
+The reason why we often feel tempted to check our dependencies into source control is so that we get the exact same versions across the dependency tree, every time, in every environment.
 
-The solution is often to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through Facebook's Yarn package manager and its `yarn.lock` manifest, both of which we should be publishing to our versioned repository.
+Including dependency trees in our repositories is not practical, however, given these are often in the hundreds of megabytes and frequently include compiled assets that are built based on the target environment and operating system, meaning that the build process itself -- the act `npm` executing a `rebuild` step after `npm install` ends -- is environment dependant, and thus not suitable for a presumably platform-agnostic code repository.
+
+During development, we want to make sure we get non-breaking upgrades to our dependencies, which can help us resolve upstream bugs, tighten our grip around security vulnerabilities, and leverage new features or improvements. For deployments however, we want reproducible builds, where installing our dependencies yields the same results every time.
+
+The solution is to include a dependency manifest, indicating what exact versions of the libraries in our dependency tree we want to be installing. This can be accomplished with npm (starting with version 5) and its `package-lock.json` manifest, as well as through Facebook's Yarn package manager and its `yarn.lock` manifest, either of which we should be publishing to our versioned repository.
 
 Using these manifests across environments ensures we get reproducible installs of our dependencies, meaning everyone working with the codebase -- as well as hosted environments -- deals with the same package versions, both at the top level (direct dependencies) and regardless the nesting depth (dependencies of dependencies -- of dependencies).
 
-Every dependency in our application should be explicitly declared in our manifest, relying on globally installed packages or global variables as little as possible. Implicit dependencies involve additional steps across environments, where developers and deployment flows alike must take action to ensure these extra dependencies are installed, beyond what a simple `npm install` step could achieve. Here's an example of how a `package-lock.json` file might look:
+Every dependency in our application should be explicitly declared in our manifest, relying on globally installed packages or global variables as little as possible -- and ideally not at all. Implicit dependencies involve additional steps across environments, where developers and deployment flows alike must take action to ensure these extra dependencies are installed, beyond what a simple `npm install` step could achieve. Here's an example of how a `package-lock.json` file might look:
 
 ```
 {
@@ -175,13 +179,15 @@ Always installing identical versions of our dependencies -- and identical versio
 
 ==== 6.3 Interfaces as Black Boxes
 
-On a similar note to that of the last section, we should treat our own components no differently than how we treat third party libraries and modules. Granted, we can make changes to our own code a lot more quickly than we can effect change in third party code -- if that's at all possible. However, when we treat all components and interfaces (including our own HTTP API) as if they were foreign to us, we can focus on consuming and testing against interfaces, while ignoring the underlying implementation.
+On a similar note to that of the last section, we should treat our own components no differently than how we treat third party libraries and modules. Granted, we can make changes to our own code a lot more quickly than we can effect change in third party code -- if that's at all possible, in some cases. However, when we treat all components and interfaces (including our own HTTP API) as if they were foreign to us, we can focus on consuming and testing against interfaces, while ignoring the underlying implementation.
 
 One way to improve our interfaces is to write detailed documentation about the input an interface touchpoint expects, and how it affects the output it provides in each case. The process of writing documentation often leads us to uncover limitations in how the interface is designed, and we might decide to change it as a result. Consumers love good documentation because it means less fumbling about with the implementation (or often, implementors), to understand how the interface is meant to be consumed, and whether it can accomplish what they need.
 
 Avoiding distinctions helps us write unit tests where we mock dependencies that aren't under test, regardless of whether they were developed in-house or by a third party. When writing tests we always assume that third party modules are generally well-tested enough that it's not our responsibility to include them in our test cases. The same thinking should apply to first party modules that just happen to be dependencies of the module we're currently writing tests for.
 
 This same reasoning can be applied to security concerns such as input sanitization. Regardless of what kind of application we're developing, we can't trust user input unless it's sanitized. Malicious actors could be angling to take over our servers, our customers' data, or otherwise inject content onto our web pages. These users might be customers or even employees, so we shouldn't treat them differently depending on that, when it comes to input sanitization.
+
+Putting ourselves in the shoes of the consumer is often the best tool to guard us against half-baked interfaces. When -- as a thought exercise -- you stop and think about how you'd want to consume an interface, and the different ways in which you might need to consume it, you often end up with a much better interface as a result. This is not to say we want to enable consumers to be able to do just about everything, but we want to make affordances where consuming an interface becomes as straightforward as possible and doesn't feel like a chore. If consumers are all but required to include long blocks of business logic right after they consume an interface, we need to stop ourselves and ask: would that business logic belong behind the interface rather than at its doorstep?
 
 ==== 6.4 Build, Release, Run
 
