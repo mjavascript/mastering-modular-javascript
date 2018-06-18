@@ -223,15 +223,26 @@ Derived state in the form of caches is not uncmoon in the world of web servers. 
 
 A better alternative in such a case would be to store derived state in a data store like Redis or Amazon S3, either of which we could update from any web server, and then serving precomputed results from Redis directly. In this way we'd still be able to access the latency benefits of using precomputed derived state, but at the same time we'd stay resilient when these requests or updates can happen on multiple web server nodes.
 
-==== 6.6 Disposability
+[NOTE]
+====
+On Disposability
 
 Whenever we hook up an event listener, regardless of whether we're listening for DOM events or those from an event emitter, we should also strongly consider disposing of the listener when the concerned parties are no longer interested in the event being raised. For instance, if we have a React component that, upon mount, starts listening for `resize` events on the `window` object, we should also make sure we remove those event listeners upon the component being unmounted.
 
 This kind of dilligence ensures that we can set up and tear down bits of our application without leaving behind mounting piles of listeners that would result in memory leaks, which are hard to track down and pinpoint.
 
 The concept of disposability goes beyond just event handlers, though. Any sort of resource that we allocate and attach to an object, component, or service is created, should be released and cleaned up when that attachment ceases to exist. This way, we can confidently create and dispose of as many components as we want, without putting our application's performance at risk.
+====
 
-==== 6.7 Parity in Development and Production
+Another improvement which could aid in complexity management is to structure applications so that all business logic is contained in a single directory structure (e.g `lib/` or `services/`) acting as a physical layer where we keep all the logic together. In doing so, we'll open ourselves up for more opportunities to reuse logic, because team members will know to go looking here before reimplementing slightly different functions that perform more or less similar computations for derived state.
+
+Colocation of view components with its immediate counterparts is appealing, -- that is, keeping each view's main component, child components, controllers, and logic in the same structure -- however, doing so in a way that tightly couples business logic to specific components can be detrimental to having a clear understanding of how an application works as a whole.
+
+Large client-side applications often suffer from not having a single place where logic should be deposited, and as a result the logic is instead spread amongst components, view controllers, and the API, instead of being mostly handled in the server-side, and then in a single physical location in the client-side code structure. This centralization can be key for newcomers to the team seeking to better understand how the application flows, because otherwise they'd have to go fishing around our view components and controllers in order to ascertain what's going on. A dauting proposition when first dipping our toes in the uncharted shores of a new codebase.
+
+The same case could be made about any other function of our code, as having clearly defined layers in an application can make it straightforward to understand how an algorithm flows from layer to layer, but we'll find the biggest rewards to reap when it comes to isolating business logic from the rest of the application code.
+
+==== 6.6 Parity in Development and Production
 
 We've established the importance of having clearly defined build and deployment processes. In a similar vein, we have the different application environments like development, production, staging, feature branches, SaaS vs. on-premise environments, and so on. Environments are divergent by definition, we are going to end up with different features in different environments, whether they are debugging facilities, product features, or performance optimizations.
 
@@ -251,7 +262,7 @@ As much as possible, we should strive to keep these kinds of divergences to a mi
 
 Proper integration testing might catch many of these kinds of mistakes, but that won't always be the case.
 
-==== 6.8 Abstraction Matters
+==== 6.7 Abstraction Matters
 
 Eager abstraction can result in catastrophe. Conversely, failure to identify and abstract away sources of major complexity can be incredibly costly as well. When we consume complex interfaces directly, but don't necessarily take advantage of all the advanced configuration options that interface has to offer, we are missing out on a powerful abstraction we could be using. The alternative would be to create a middle layer in front of the complex interface, and have consumers go through that layer instead.
 
