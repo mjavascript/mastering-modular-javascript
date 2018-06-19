@@ -172,7 +172,7 @@ import('./mathlib').then(mathlib => {
 })
 ----
 
-In ESM, too, every file is a module with its own scope and context. One major advantage in ESM over CJS is how ESM has -- and encourages -- a way of statically importing dependencies. Static imports vastly improve the introspection capabilities of module systems, given they can be analyzed statically and lexically extracted from the abstract syntax tree (AST) of each module in the system. Static imports in ESM are constrained to the topmost level of a module, further simplifying parsing and introspection.
+In ESM, too, every file is a module with its own scope and context. One major advantage in ESM over CJS is how ESM has -- and encourages -- a way of statically importing dependencies. Static imports vastly improve the introspection capabilities of module systems, given they can be analyzed statically and lexically extracted from the abstract syntax tree (AST) of each module in the system. Static imports in ESM are constrained to the topmost level of a module, further simplifying parsing and introspection. Another advantage over CJS require() is that ESM specifies asynchronous module loading, which implies that multiple parts of dependency graph could be loaded in parallel. However, this feature is not yet implemented in most evironments, even though there is a strong indication that Node.js v10.x.x might include this feature as well. Once again, you can notice the power of declarativness and non-leaky abstractions.
 
 In Node.js v8.5.0, ESM support was introduced behind an `--experimental-modules` flag -- provided that we use the `.mjs` file extension for our modules. Most evergreen browsers already support ESM without flags.
 
