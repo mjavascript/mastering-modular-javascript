@@ -27,7 +27,9 @@ Unlike strings, with template literals we can interpolate expressions using a st
 `Hello ${ name }, I'm Nicolás!`
 ----
 
-Besides these improvements, template literals also offer the possibility of tagged templates. You can prefix the template with a custom function that transforms the template's output use cases like input sanitization, formatting, or anything else.
+Besides these improvements, template literals also offer the possibility of tagged templates. You can prefix the template with a custom function that transforms the template's output, enabling use cases like input sanitization, formatting, or anything else.
+
+> add a tagged template example here
 
 Whenever we need to compose a string using data, template literals are a terse alternative to string concatenation. When we want to avoid escaping single or double quotes, template literals can help. The same is true when we want to write multi-line strings.
 
@@ -35,16 +37,16 @@ In every other case -- when there's no interpolation, escaping, or multi-line ne
 
 [NOTE]
 ====
-When it comes to style choices, you'll rarely face problems if you let your team come to a consensus about the preferred style choice and later enforce that choice by way of a lint tool like ESLint. It's entirely valid ot stick with single-quoted strings and only use template literals when deemed absolutely necessary, if that's what most of the team prefers.
+When it comes to style choices, you'll rarely face problems if you let your team come to a consensus about the preferred style choice and later enforce that choice by way of a lint tool like ESLint. It's entirely valid to stick with single-quoted strings and only use template literals when deemed absolutely necessary, if that's what most of the team prefers.
 
-Using a tool like ESLint and a continuous integration job to enforce its rules means nobody has to perform the time consuming job of keeping everyone in line with the house style. When tooling enforces style choices, discussions about those choices won't crop up as often in discussion threads while contributors are collaborating on units of work.
+Using a tool like ESLint and a continuous integration job to enforce its rules means nobody has to perform the time-consuming job of keeping everyone in line with the house style. When tooling enforces style choices, discussions about those choices won't crop up as often in discussion threads while contributors are collaborating on units of work.
 ====
 
-It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity. While the former may make a codebase subjectively easier to read, or aesthetically pleasing, it is only through deliberate action that we keep complexity in check. Granted, a consistent style throughout a codebase can help contain complexity, but the exact style is unimportant as long as we enforce it consistently.
+It's important to differentiate between purely stylistic choices, which tend to devolve in contentious time-sinking discussions, and choices where there's more ground to be covered in the everlasting battle against complexity. While the former may make a codebase subjectively easier to read, or more aesthetically pleasing, it is only through deliberate action that we keep complexity in check. Granted, a consistent style throughout a codebase can help contain complexity, but the exact style is unimportant as long as we enforce it consistently.
 
 ==== 5.1.2 Destructuring, Rest, and Spread
 
-The destructuring, rest and spread features came into effect in ES6. These features accomplish a number of different things, which we'll now discuss.
+The destructuring, rest, and spread features came into effect in ES6. These features accomplish a number of different things, which we'll now discuss.
 
 Destructuring helps us indicate the fields of an object that we'll be using to compute the output of a function. In the following example, we destructure a few properties from a `ticker` variable, and then combine that with a `...details` rest pattern containing every property of `ticker` that we haven't explicitly named in our destructuring pattern.
 
@@ -101,7 +103,7 @@ const {
 
 When using `:` to alias, it can be difficult at first to remember whether the original name or the aliased name comes first. One helpful way to keep it straight is to mentally replace `:` with the word "as".  That way, `name: responseContactName` would read as "name as responseContactName".
 
-We can even have the same property listed twice, if we wanted to destructure some of its contents, while also maintaining access to the object itself.  For example, if we wanted to destructure the `contact` object's contents, like we do above, but also take a reference to the whole `contact` object, we can do the following
+We can even have the same property listed twice, if we wanted to destructure some of its contents, while also maintaining access to the object itself. For example, if we wanted to destructure the `contact` object's contents, like we do above, but also take a reference to the whole `contact` object, we can do the following:
 
 [source,javascript]
 ----
@@ -135,6 +137,8 @@ const newCopy = { ...fax, date: new Date() }
 This allows us to create slightly modified shallow copies of other objects. When dealing with discrete state management, this means we don't need to resort to `Object.assign` method calls or utility libraries. While there's nothing inherently wrong with `Object.assign` calls, the object spread `...` abstraction is easier for us to internalize and mentally map its meaning back to `Object.assign` without us realizing it, and so the code becomes easier to read because we're dealing with less unabstracted knowledge.
 
 Another benefit worth pointing out is that `Object.assign()` can cause accidents: if we forget to pass an empty object literal as the first argument for this use case, we end up mutating the object. With object spread, there is no way to accidentally mutate anything, since the pattern always acts as if an empty object was passed to `Object.assign` in the first position.
+
+> Some of the above phrasing matches [our I/O 2018 talk](https://www.youtube.com/watch?v=mIWCLOftfRw) *exactly*! I love it.
 
 ==== 5.1.3 Striving for simple `const` bindings
 
@@ -207,7 +211,14 @@ Let's move onto a more interesting topic: asynchronous code flows.
 
 ==== 5.1.4 Navigating Callbacks, Promises, and Asynchronous Functions
 
-JavaScript now offers several options when it comes to describing asynchronous algorithms: the plain callback pattern, promises, async functions, async iterators, async generators, plus any patterns offered by libraries consumed in our applications. Each solution comes with their own set of strengths and weaknesses: callbacks are typically a solid choice, but we often need to get libraries involved when we want to execute our work concurrently; Promises might be hard to understand at first, but they offer a few utilities like `Promise#all` for concurrent work, yet they might be hard to debug under some circumstances; Async functions require a bit of understanding on top of being comfortable with promises, but they're easier to debug and often result in simpler code, plus they can be interspersed with synchronous functions rather easily as well; Iterators and generators are powerful tools, but there aren't many practical use cases for them, so we must consider whether we're using them because they fit our needs or just because we can.
+JavaScript now offers several options when it comes to describing asynchronous algorithms: the plain callback pattern, promises, async functions, async iterators, async generators, plus any patterns offered by libraries consumed in our applications. Each solution comes with its own set of strengths and weaknesses:
+
+1. Callbacks are typically a solid choice, but we often need to get libraries involved when we want to execute our work concurrently;
+1. Promises might be hard to understand at first, but they offer a few utilities like `Promise#all` for concurrent work, yet they might be hard to debug under some circumstances;
+1. Async functions require a bit of understanding on top of being comfortable with promises, but they're easier to debug and often result in simpler code, plus they can be interspersed with synchronous functions rather easily as well;
+1. Iterators and generators are powerful tools, but there aren't many practical use cases for them, so we must consider whether we're using them because they fit our needs or just because we can.
+
+> there aren’t many practical use cases for them? [citation needed] I for one use iteration all the time.
 
 It could be argued that callbacks are the simplest mechanism, although a similar case could be made for promises now that so much of the language is built around them. In any case, consistency should remain as the primary driving force of how we decide which pattern to use. While it's okay to mix and match a few different patterns, most of the time we should be using the same patterns again and again, so that our team can develop a sense of familiarity with the codebase, instead of having to take a guess whenever encountering an unchartered portion of the application.
 
@@ -221,12 +232,12 @@ function delay(timeout) {
       resolve()
     }, timeout)
   }
-  return new Promise(resolver))
+  return new Promise(resolver)
 }
 delay(2000).then(…)
 ----
 
-A similar pattern would have to be used to consume functions taking a last argument that's an error-first callback style function in Node.js. Starting with Node.js v8.0.0, however, there's a utility built-in that "promisifies" these callback-based functions so that they return promises.footnote:[Note also that, starting in Node.js v10.0.0, the native `fs.promises` interface can be used to access promise-based versions of the `fs` module's methods.]
+A similar pattern would have to be used to consume functions taking a last argument that's an error-first callback-style function in Node.js. Starting with Node.js v8.0.0, however, there's a utility built-in that "promisifies" these callback-based functions so that they return promises.footnote:[Note also that, starting in Node.js v10.0.0, the native `fs.promises` interface can be used to access promise-based versions of the `fs` module's methods.]
 
 [source,javascript]
 ----
@@ -258,6 +269,8 @@ function promisify(fn) {
 }
 ----
 
+> Add an example of calling promisify() just to make things crystal-clear
+
 Casting promises back into a callback-based format is less involved because we can add reactions to handle both the fulfillment and rejection results, and call back `done` passing in the corresponding result where appropriate.
 
 [source,javascript]
@@ -285,13 +298,17 @@ Let's explore how we can improve our application designs beyond what JavaScript 
 
 Up until ES6 introduced first-class syntax for prototypal inheritance to JavaScript, prototypes weren't a widely used feature in user-land. Instead, libraries offered helper methods that made inheritance simpler, using prototypal inheritance under the hood, but hiding the implementation details from their consumers. Even though ES6 classes look a lot like classes in other languages, they're syntactic sugar using prototypes under the hood, making them compatible with older techniques and libraries.
 
-The introduction of a `class` keyword, paired with the React framework hailing classes as the go-to way of declaring stateful components, classes have helped spark some love for a pattern that was previously quite unpopular when it comes to JavaScript. In the case of React, the base `Component` class offers lightweight state management methods, while leaving the rendering and lifecycle up to the consumer classes extending `Component`. When necessary, the consumer can also decide to implement methods such as `componentDidMount`, which allows for event binding after a component tree is mounted; `componentDidCatch`, which can be used to trap unhandled exceptions that arise during the component lifecycle; among a variety of other soft interface methods. There's no mention of these optional lifecycle hooks anywhere in the base `Component` class, which are instead confined to the rendering mechanisms of React. In this sense, we note that the `Component` class stays focused on state management, while everything else is offered up by the consumer.
+The introduction of a `class` keyword, paired with the React framework hailing classes as the go-to way of declaring stateful components
+
+> I heard that React might be moving away from classes in the future. You might want to ping Dan Abramov before including this sentence.
+
+, classes have helped spark some love for a pattern that was previously quite unpopular when it comes to JavaScript. In the case of React, the base `Component` class offers lightweight state management methods, while leaving the rendering and lifecycle up to the consumer classes extending `Component`. When necessary, the consumer can also decide to implement methods such as `componentDidMount`, which allows for event binding after a component tree is mounted; `componentDidCatch`, which can be used to trap unhandled exceptions that arise during the component lifecycle; among a variety of other soft interface methods. There's no mention of these optional lifecycle hooks anywhere in the base `Component` class, which are instead confined to the rendering mechanisms of React. In this sense, we note that the `Component` class stays focused on state management, while everything else is offered up by the consumer.
 
 Inheritance is also useful when there's an abstract interface to implement and methods to override, particularly when the objects being represented can be mapped to the real world. In practical terms and in the case of JavaScript, inheritance works great when the prototype being extended offers a good description for the parent prototype: a `Car` is a `Vehicle` but a car is not a `SteeringWheel`: the wheel is just one aspect of the car.
 
 ==== 5.2.2 The Perks of Composition: Aspects and Decorators
 
-With inheritance we can add layers of complexity to an object. These layers are meant to be ordered, we start with the least specific foundational bits of the object and build our way up to the most specific aspects of it. When we write code based on inheritance chains, complexity is spread across the different classes, but lies mostly at the foundational layers which offer a terse API while hiding this complexity away. Composition is an alternative to inheritance. Rather than building objects by vertically stacking functionality, composition relies on stringing together orthogonal aspects of functionality. In this sense, orthogonality means that the bits of functionality we compose together complements each other, but doesn't alter one another's behavior.
+With inheritance we can add layers of complexity to an object. These layers are meant to be ordered: we start with the least specific foundational bits of the object and build our way up to the most specific aspects of it. When we write code based on inheritance chains, complexity is spread across the different classes, but lies mostly at the foundational layers which offer a terse API while hiding this complexity away. Composition is an alternative to inheritance. Rather than building objects by vertically stacking functionality, composition relies on stringing together orthogonal aspects of functionality. In this sense, orthogonality means that the bits of functionality we compose together complements each other, but doesn't alter one another's behavior.
 
 One way to compose functionality is additive: we could write decorators, which augment existing objects with new functionality. In the following code snippet we have a `makeEmitter` function which adds flexible event handling functionality to any target object, providing them with an `.on` method, where we can add event listeners to the target object; and an `.emit` method, where the consumer can indicate a type of event and any number of parameters to be passed to event listeners.
 
@@ -336,7 +353,7 @@ person.emit('move', 23, 5)
 
 This approach is versatile, helping us add event emission functionality to any object without the need for adding an `EventEmitter` class somewhere in the prototype chain of the object. This is useful in cases where you don't own the base class, when the targets aren't class-based, or when the functionality to be added isn't meant to be part of every instance of a class: there are persons who emit events and persons that are quiet and don't need this functionality.
 
-Another way of doing composition, that doesn't rely on decorators, is to rely on functional aspects instead, without mutating your target object. In the following snippet we do just that: we have an `emitters` map where we store target objects and map them to the event listeners they have, an `onEvent` function that associates event listeners to target objects, and an `emitEvent` function that fires all event listeners of a given type for a target object, passing the provided parameters. All of this is accomplished in such a way that there's no need to modify the `person` object in order to have event handling capabilities associated with the object.
+Another way of doing composition that doesn't rely on decorators is to rely on functional aspects instead, without mutating your target object. In the following snippet we do just that: we have an `emitters` map where we store target objects and map them to the event listeners they have, an `onEvent` function that associates event listeners to target objects, and an `emitEvent` function that fires all event listeners of a given type for a target object, passing the provided parameters. All of this is accomplished in such a way that there's no need to modify the `person` object in order to have event handling capabilities associated with the object.
 
 [source,javascript]
 ----
@@ -385,7 +402,7 @@ emitEvent(person, 'move', 23, 5)
 // <- 'Artemisa moved to [23, 5].'
 ----
 
-Note how we're using both `WeakMap` and `Map` here. Using a plain `Map` would prevent garbage collection from cleaning things up when `target` is only being referenced by `Map` entries, whereas `WeakMap` would allow garbage collection to take place. Given we usually want to attach events to objects, we can use `WeakMap` as a way to avoid creating strong references that might end up leading to memory leaks. On the other hand, it's okay to use a regular `Map` for the event listeners, given those are associated to an event type string.
+Note how we're using both `WeakMap` and `Map` here. Using a plain `Map` would prevent garbage collection from cleaning things up when `target` is only being referenced by `Map` entries, whereas `WeakMap` allows garbage collection to take place on the objects that make up its keys. Given we usually want to attach events to objects, we can use `WeakMap` as a way to avoid creating strong references that might end up causing memory leaks. On the other hand, it's okay to use a regular `Map` for the event listeners, given those are associated to an event type string.
 
 Let's move onto deciding whether to use inheritance, decorators, or functional composition, where each pattern shines, and when to avoid them.
 
@@ -399,7 +416,7 @@ The functional approach is a bit more cumbersome to implement than simply mutati
 
 Furthermore, using base classes makes it a bit hard to reuse the logic at varying insertion points in our prototype chains. Using decorators, likewise, makes it challenging to add similar methods that support slightly different use cases. Using a functional approach leads to less coupling in this regard, but it could also complicate the underlying implementation of the makeup for objects, making it hard to decypher how their functionality ties in together, tainting our fundamental understanding of how code flows and making debugging sessions longer than need be.
 
-As with most things programming, your codebase will benefit from a semblance of consistency. Even if you use all three patterns, -- and others -- a codebase that uses half a dozen patterns in equal amounts will be harder to understand, work with, and build on, than an equivalnet codebase that instead uses one pattern for the vast majority of its code while using other patterns in smaller ways when warranted. Picking the right pattern for each situation and striving for consistency might seem at odds with each other, but this is again a balancing act. The trade-off is between consistency in the grand scale of our codebase versus simplicity in the local piece of code we're working on. The question to ask is then: are we obtaining enough of a simplicity gain that it warrants the sacrifice of some consistency?
+As with most things programming, your codebase benefits from a semblance of consistency. Even if you use all three patterns, -- and others -- a codebase that uses half a dozen patterns in equal amounts is harder to understand, work with, and build on, than an equivalent codebase that instead uses one pattern for the vast majority of its code while using other patterns in smaller ways when warranted. Picking the right pattern for each situation and striving for consistency might seem at odds with each other, but this is again a balancing act. The trade-off is between consistency in the grand scale of our codebase versus simplicity in the local piece of code we're working on. The question to ask is then: are we obtaining enough of a simplicity gain that it warrants the sacrifice of some consistency?
 
 === 5.3 Code Patterns
 
@@ -409,7 +426,7 @@ Digging a bit deeper and into more specific elements of architecture design, in 
 
 The revealing module pattern has become a staple in the world of JavaScript. The premise is simple enough: expose precisely what consumers should be able to access, and avoid exposing anything else. The reasons for this are manifold. Preventing unwarranted access to implementation details reduces the likelihood of your module's interface being abused for unsupported use cases that might bring headaches to both the module implementer and the consumer alike.
 
-Explicitly avoid exposing methods meant to be private, such as a hypothetical +_calculatePriceHistory+ method, which relies on the leading hyphen as a way of discouraging direct access and signaling that it should be regarded as private. Avoiding such methods prevents test code from accessing private methods directly, resulting in tests that make assertions solely regarding the interface and which can be later referenced as documentation on how to use the interface; prevents consumers from monkey-patching implementation details, leading to more transparent interfaces; and also often results in cleaner interfaces due to the fact that the interface is all there is, and there's no alternative ways of interacting with the module through direct use of its internals.
+Explicitly avoid exposing methods that are meant to be private, such as a hypothetical +_calculatePriceHistory+ method, which relies on the leading underscore as a way of discouraging direct access and signaling that it should be regarded as private. Avoiding such methods prevents test code from accessing private methods directly, resulting in tests that make assertions solely regarding the interface and which can be later referenced as documentation on how to use the interface; prevents consumers from monkey-patching implementation details, leading to more transparent interfaces; and also often results in cleaner interfaces due to the fact that the interface is all there is, and there's no alternative ways of interacting with the module through direct use of its internals.
 
 JavaScript modules are of a revealing nature by default, making it easy for us to follow the revealing pattern of not giving away access to implementation details. Functions, objects, classes, and any other bindings we declare are private unless we explicitly decide to `export` them from the module.
 
@@ -419,9 +436,11 @@ When we expose only a thin interface, our implementation can change largely with
 
 Even when using JavaScript modules and following the revealing pattern strictly, we might end up with unintentional sharing of state across our usage of a module. Incidental state might result in unexpected results from an interface: consumers don't have a complete picture because other consumers are contributing changes to this shared state as well, sometimes making it hard to figure out what exactly is going on in an application.
 
-If we were to move our functional event emitter code snippet, with `onEvent` and `emitEvent`, into a JavaScript module, we'd notice that the `emitters` map is now a local global for that module, meaning all of the module's scope has access to `emitters`. This is what we'd want, because that way we can register event listeners in `onEvent` and fire them off in `emitEvent`. In most other situations, however, sharing persistent state across public interface methods is a recipe for unexpected bugs.
+If we were to move our functional event emitter code snippet, with `onEvent` and `emitEvent`, into a JavaScript module, we'd notice that the `emitters` map is now a lexical top-level binding for that module, meaning all of the module's scope has access to `emitters`. This is what we'd want, because that way we can register event listeners in `onEvent` and fire them off in `emitEvent`. In most other situations, however, sharing persistent state across public interface methods is a recipe for unexpected bugs.
 
 Suppose we have a `calculator` module that can be used to make basic calculations through a stream of operations. Even if consumers were supposed to use it synchronously and flush state in one fell swoop, without giving way for a second consumer to taint the state and produce unexpected results, our module shouldn't rely on consumer behavior to provide consistent results. The following contrived implementation relies on local shared state, and would need consumers to use the module strictly as intended, making all calls to `add`, `multiply`, and `calculate` in sequence.
+
+> How could one _not_ call them in sequence?
 
 [source,javascript]
 ----
@@ -447,6 +466,9 @@ export function calculate() {
 ----
 
 Here's an example of how consuming the previous module could work. As soon as we tried to asynchronously append text to the buffer, things would start getting out of hand, with the operations array getting bits and pieces of unrelated calculations, tainting our calculations.
+
+> Show the import statement as well
+> Can you give an example of “asynchronously appending text to the buffer”? It’s not immediately clear to me what you mean here
 
 [source,javascript]
 ----
@@ -477,7 +499,9 @@ export function calculate() {
 }
 ----
 
-This approach presents problems too, however. Even though the `state` will always be reset to `0`, we're treating unrelated operations as if they were all part of a whole, which is still wrong.
+This approach presents problems too, however. Even though the `state` is always reset to `0`, we're treating unrelated operations as if they were all part of a whole, which is still wrong.
+
+> Spell this out by giving an example
 
 Blatantly, this contrived module is poorly designed, as its operations buffer should never be used to drive several unrelated calculations. We should instead expose a factory function that returns an object from its own self-contained scope, where all relevant state is shut off from the outside world. The methods on this object are equivalent to the exported interface of a plain JavaScript module, but state mutations are contained to instances that consumers create.
 
@@ -515,13 +539,15 @@ multiply(-2)
 calculate() // <- -14
 ----
 
+> Please give an example of “doing things asynchronously” as it seems key to the point that you’re making.
+
 As we just showed, even when using modern language constructs and JavaScript modules, it's not too hard to create complications through shared state. Thus, we should always strive to contain mutable state as close to its consumers as possible.
 
 ==== 5.3.3 Event Emission
 
 We've already explored at length the pattern of registering event listeners associated to arbitrary plain JavaScript objects and firing events of any kind, triggering those listeners. Event handling is most useful when we want to have clearly-delineated side-effects.
 
-In the browser, for instance, we can bind a `click` event to an specific DOM element. When the `click` event is fired, we might issue an HTTP request, render a different page, start an animation, or play an audio file.
+In the browser, for instance, we can bind a `click` event to an specific DOM element. When the `click` event fires, we might issue an HTTP request, render a different page, start an animation, or play an audio file.
 
 Events are a useful way of reporting progress whenever we're dealing with a queue. While processing a queue, we could fire a `progress` event whenever an item is processed, allowing the UI or any other consumer to render and update a progress indicator or apply a partial unit of work relying on the data processed by the queue.
 
@@ -548,8 +574,12 @@ class Person {
 const rwanda = new Person('Rwanda', '123 Main St')
 ----
 
-Although we can easily serialize our `rwanda` instance with `JSON.stringify(rwanda)`, and then send it over the wire, the code on the other end will have no standard way of turning this JSON back into an instance of our `Person` class, which might have a lot more functionality than merely a `greet` function. The receiving end might have no business deserializing this data back into the class instance it originated from, but in some cases there's merit to having an exact replica object back on the other end. For example, to reduce friction when passing messages between a website and a web worker, both sides should be dealing in the same data structure. In such scenario, simple JavaScript objects are ideal.
+Although we can easily serialize our `rwanda` instance with `JSON.stringify(rwanda)`, and then send it over the wire, the code on the other end has no standard way of turning this JSON back into an instance of our `Person` class, which might have a lot more functionality than merely a `greet` function. The receiving end might have no business deserializing this data back into the class instance it originated from, but in some cases there's merit to having an exact replica object back on the other end. For example, to reduce friction when passing messages between a website and a web worker, both sides should be dealing in the same data structure. In such scenarios, simple JavaScript objects are ideal.
 
-JSON, a subset of the JavaScript grammar, was purpose-built for this use case, where we often have to serialize data, send it over the wire, and deserialize it on the other end. Plain JavaScript objects are a great way to store data in our applications, offer frictionless serialization out the box, and lead to cleaner data structures because we can keep logic decoupled from the data.
+JSON, a subset of the JavaScript grammar
+
+> Aside: this wasn’t strictly true for a long time, but that’s changing now with https://github.com/tc39/proposal-json-superset :) (No need to mention this ofc)
+
+, was purpose-built for this use case, where we often have to serialize data, send it over the wire, and deserialize it on the other end. Plain JavaScript objects are a great way to store data in our applications, offer frictionless serialization out the box, and lead to cleaner data structures because we can keep logic decoupled from the data.
 
 When the language on both the sending and receiving ends is JavaScript, we can share a module with all the functionality that we need around the data structure. This way, we don't have to worry about serialization, since we're using plain JavaScript objects and can rely on JSON for the transport layer. We don't have to concern ourselves with sharing functionality either, because we can rely on the JavaScript module system for that part.
