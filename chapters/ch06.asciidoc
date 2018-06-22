@@ -3,7 +3,7 @@
 
 Even though most of us work on projects where the source code is not publicly available, we can all benefit from following open-source best practices, many of which still apply in closed-source project development. Pretending all of our code is going to be open-source results in better configuration and secret management, better documentation, better interfaces, and more maintainable codebases overall.
 
-In this chapter we'll explore open-source principles and look at ways in which we can adapt a methodology and set of robustness principles known as "The Twelve-Factor App"footnote:[see-tfa,You can find the original 12 Factor App methodology and its documentation at: https://mjavascript.com/out/12factor.] -- generally devised for back-end development -- to modern JavaScript application development, front-end and back-end alike.
+In this chapter we'll explore open-source principles and look at ways in which we can adapt a methodology and set of robustness principles known as "The Twelve-Factor App"footnoteref:[see-tfa,You can find the original 12 Factor App methodology and its documentation at: https://mjavascript.com/out/12factor.] -- generally devised for back-end development -- to modern JavaScript application development, front-end and back-end alike.
 
 === 6.1 Secure Configuration Management
 
