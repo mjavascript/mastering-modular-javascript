@@ -139,7 +139,7 @@ There are many other ways of storing our application settings, each with their o
 
 A secret service also takes care of encryption, secure storage, secret rotation (useful in the case of a data breach), among other advanced features.
 
-==== 6.2 Explicit Dependency Management
+=== 6.2 Explicit Dependency Management
 
 The reason why we sometimes feel tempted to check our dependencies into source control is so that we get the exact same versions across the dependency tree, every time, in every environment.
 
@@ -177,7 +177,7 @@ Using the information in a package lock file, which contains details about every
 
 Always installing identical versions of our dependencies -- and identical versions of our dependencies' dependencies -- brings us one step closer to having development environments that closely mirror what we do in production. This increases the likelyhood we can swiftly reproduce bugs that occurred in production in our local environments, while decreasing the odds that something that worked during development fails in staging.
 
-==== 6.3 Interfaces as Black Boxes
+=== 6.3 Interfaces as Black Boxes
 
 On a similar note to that of the last section, we should treat our own components no differently than how we treat third-party libraries and modules. Granted, we can make changes to our own code a lot more quickly than we can effect change in third-party code -- if that's at all possible, in some cases. However, when we treat all components and interfaces (including our own HTTP API) as if they were foreign to us, we can focus on consuming and testing against interfaces, while ignoring the underlying implementation.
 
@@ -189,7 +189,7 @@ This same reasoning can be applied to security concerns such as input sanitizati
 
 Putting ourselves in the shoes of the consumer is the best tool to guard us against half-baked interfaces. When -- as a thought exercise -- you stop and think about how you'd want to consume an interface, and the different ways in which you might need to consume it, you end up with a much better interface as a result. This is not to say we want to enable consumers to be able to do just about everything, but we want to make affordances where consuming an interface becomes as straightforward as possible and doesn't feel like a chore. If consumers are all but required to include long blocks of business logic right after they consume an interface, we need to stop ourselves and ask: would that business logic belong behind the interface rather than at its doorstep?
 
-==== 6.4 Build, Release, Run
+=== 6.4 Build, Release, Run
 
 Build processes have a few different aspects to them. At the highest level, there's the shared logic where we install and compile our assets so that they can be consumed by our runtime application. This can mean anything like installing system or application dependencies, copying files over to a different directory, compiling files into a different language or bundling them together, among a multitude of other requirements your application might have.
 
@@ -207,7 +207,7 @@ For these processes to be effective, they must be consistent. Intermittent test 
 
 Note how up until this point we have focused on how we build and test our assets, but not how we deploy them. These two processes, build and deployment, are closely related but they shouldn't be intertwined. A clearly isolated build process where we end up with a packaged application we can easily deploy, and a deployment process that takes care of the specifics regardless of whether you're deploying to your own local environment, or to a hosted staging or production environment, means that for the most part we won't need to worry about environments during our build processes nor at runtime.
 
-==== 6.5 Statelessness
+=== 6.5 Statelessness
 
 We've already explored how state, if left unchecked, can lead us straight to the heat death of our applications. Keeping state to a minimum translates directly into applications that are easier to debug. The less global state there is, the less unpredictable the current conditions of an application are at any one point in time, and the fewer surprises we'll run into while debugging.
 
@@ -242,7 +242,7 @@ Large client-side applications often suffer from not having a single place where
 
 The same case could be made about any other function of our code, as having clearly defined layers in an application can make it straightforward to understand how an algorithm flows from layer to layer, but we'll find the biggest rewards to reap when it comes to isolating business logic from the rest of the application code.
 
-==== 6.6 Parity in Development and Production
+=== 6.6 Parity in Development and Production
 
 We've established the importance of having clearly defined build and deployment processes. In a similar vein, we have the different application environments like development, production, staging, feature branches, SaaS vs. on-premise environments, and so on. Environments are divergent by definition, we are going to end up with different features in different environments, whether they are debugging facilities, product features, or performance optimizations.
 
@@ -262,7 +262,7 @@ As much as possible, we should strive to keep these kinds of divergences to a mi
 
 Proper integration testing might catch many of these kinds of mistakes, but that won't always be the case.
 
-==== 6.7 Abstraction Matters
+=== 6.7 Abstraction Matters
 
 Eager abstraction can result in catastrophe. Conversely, failure to identify and abstract away sources of major complexity can be incredibly costly as well. When we consume complex interfaces directly, but don't necessarily take advantage of all the advanced configuration options that interface has to offer, we are missing out on a powerful abstraction we could be using. The alternative would be to create a middle layer in front of the complex interface, and have consumers go through that layer instead.
 
