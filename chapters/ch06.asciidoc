@@ -242,6 +242,8 @@ Large client-side applications often suffer from not having a single place where
 
 The same case could be made about any other function of our code, as having clearly defined layers in an application can make it straightforward to understand how an algorithm flows from layer to layer, but we'll find the biggest rewards to reap when it comes to isolating business logic from the rest of the application code.
 
+Using a state management solution like Redux or MobX, where we isolate all state from the rest of the application, would be another option. Regardless of our approach, the most important aspect remains that we stick to clearly isolating the view rendering aspects in our applications from its business logic aspects, as much as possible.
+
 === 6.6 Parity in Development and Production
 
 We've established the importance of having clearly defined build and deployment processes. In a similar vein, we have the different application environments like development, production, staging, feature branches, SaaS vs. on-premise environments, and so on. Environments are divergent by definition, we are going to end up with different features in different environments, whether they are debugging facilities, product features, or performance optimizations.
