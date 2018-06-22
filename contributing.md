@@ -1,6 +1,6 @@
 # Interested in Contributing?
 
-Good stuff! Your contributions to Practical ES6 and the Modular JavaScript campaign efforts will be greatly appreciated! 👏
+Good stuff! Your contributions to Mastering Modular JavaScript and the Modular JavaScript campaign efforts will be greatly appreciated! 👏
 
 You can help raise the quality bar for my books by helping me fix bugs in code, grammar, or explanations. Feel free to report an issue and let me know! This way, we can minimize the amount of errata we'll have to publish later on and improve the overall quality of the book series.
 
