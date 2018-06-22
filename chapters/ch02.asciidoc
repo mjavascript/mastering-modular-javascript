@@ -87,7 +87,8 @@ The following example shows an email component that's only concerned with config
 ----
 import mailApi from 'mail-api'
 import { mailApiSecret } from './secrets'
-export default function send (options, done) {
+
+export default function send(options, done) {
   const { to, subject, html } = options
   const client = mailApi({ mailApiSecret })
   client.send({
@@ -103,7 +104,7 @@ It wouldn't be hard to create a drop-in replacement by developing a module which
 
 [source,javascript]
 ----
-export default function send (options, done) {
+export default function send(options, done) {
   const { to, subject, html } = options
   console.log(`
     Sending email.
@@ -120,12 +121,14 @@ By the same token, a templating component could be developed orthogonally, with 
 [source,javascript]
 ----
 import insane from 'insane'
-function sanitize (template, ...expressions) {
+
+function sanitize(template, ...expressions) {
   return template.reduce((result, part, i) =>
     result + insane(expressions[i - 1]) + part
   )
 }
-export default function compile (model) {
+
+export default function compile(model) {
   const { title, body, tags } = model
   const html = sanitize`
     <h1>${ title }</h1>
@@ -142,7 +145,9 @@ export default function compile (model) {
 }
 ----
 
-Changing the API slightly shouldn't be an issue, as long as the API remains consistent across the components we want to make interchangeable. A different implementation could take a template identifier, in addition to the +model+ object, so that the template itself is also decoupled from the +compile+ function.
+Slightly modifying the API shouldn't be an issue, as long as it remains consistent across the components we want to make interchangeable. For instance, a different implementation could take a template identifier, in addition to the +model+ object, so that the template itself is also decoupled from the +compile+ function.
+
+When we keep the API consistent across implementationsfootnoteref:[impl-examples, For example, one implementation might merely compile an HTML email using inline templates, another might use HTML template files, another could rely on a third party service, and yet another could compile emails as plain-text instead.], using the same signature across every module, it's easy to swap out implementations depending on context such as the execution environment (development vs. staging vs. production) or any other dynamic context that we need to rely upon.
 
 As we mentioned earlier, a third module could plumb together different components which handle separate concerns, such as templating and email sending. The following example leverages the logging email provider and the static templating function to join both concerns together. Interestingly, this module doesn't break SRP either, as its only concern is to plumb other modules together.
 

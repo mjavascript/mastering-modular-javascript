@@ -333,11 +333,11 @@ The introduction of a `class` keyword, paired with the React framework originall
 
 Inheritance is also useful when there's an abstract interface to implement and methods to override, particularly when the objects being represented can be mapped to the real world. In practical terms and in the case of JavaScript, inheritance works great when the prototype being extended offers a good description for the parent prototype: a `Car` is a `Vehicle` but a car is not a `SteeringWheel`: the wheel is just one aspect of the car.
 
-==== 5.2.2 The Perks of Composition: Aspects and Decorators
+==== 5.2.2 The Perks of Composition: Aspects and Extensions
 
 With inheritance we can add layers of complexity to an object. These layers are meant to be ordered: we start with the least specific foundational bits of the object and build our way up to the most specific aspects of it. When we write code based on inheritance chains, complexity is spread across the different classes, but lies mostly at the foundational layers which offer a terse API while hiding this complexity away. Composition is an alternative to inheritance. Rather than building objects by vertically stacking functionality, composition relies on stringing together orthogonal aspects of functionality. In this sense, orthogonality means that the bits of functionality we compose together complements each other, but doesn't alter one another's behavior.
 
-One way to compose functionality is additive: we could write decorators, which augment existing objects with new functionality. In the following code snippet we have a `makeEmitter` function which adds flexible event handling functionality to any target object, providing them with an `.on` method, where we can add event listeners to the target object; and an `.emit` method, where the consumer can indicate a type of event and any number of parameters to be passed to event listeners.
+One way to compose functionality is additive: we could write extension functions, which augment existing objects with new functionality. In the following code snippet we have a `makeEmitter` function which adds flexible event handling functionality to any target object, providing them with an `.on` method, where we can add event listeners to the target object; and an `.emit` method, where the consumer can indicate a type of event and any number of parameters to be passed to event listeners.
 
 [source,javascript]
 ----
@@ -380,7 +380,7 @@ person.emit('move', 23, 5)
 
 This approach is versatile, helping us add event emission functionality to any object without the need for adding an `EventEmitter` class somewhere in the prototype chain of the object. This is useful in cases where you don't own the base class, when the targets aren't class-based, or when the functionality to be added isn't meant to be part of every instance of a class: there are persons who emit events and persons that are quiet and don't need this functionality.
 
-Another way of doing composition, that doesn't rely on decorators, is to rely on functional aspects instead, without mutating your target object. In the following snippet we do just that: we have an `emitters` map where we store target objects and map them to the event listeners they have, an `onEvent` function that associates event listeners to target objects, and an `emitEvent` function that fires all event listeners of a given type for a target object, passing the provided parameters. All of this is accomplished in such a way that there's no need to modify the `person` object in order to have event handling capabilities associated with the object.
+Another way of doing composition, that doesn't rely on extension functions, is to rely on functional aspects instead, without mutating your target object. In the following snippet we do just that: we have an `emitters` map where we store target objects and map them to the event listeners they have, an `onEvent` function that associates event listeners to target objects, and an `emitEvent` function that fires all event listeners of a given type for a target object, passing the provided parameters. All of this is accomplished in such a way that there's no need to modify the `person` object in order to have event handling capabilities associated with the object.
 
 [source,javascript]
 ----
@@ -431,7 +431,7 @@ emitEvent(person, 'move', 23, 5)
 
 Note how we're using both `WeakMap` and `Map` here. Using a plain `Map` would prevent garbage collection from cleaning things up when `target` is only being referenced by `Map` entries, whereas `WeakMap` allows garbage collection to take place on the objects that make up its keys. Given we usually want to attach events to objects, we can use `WeakMap` as a way to avoid creating strong references that might end up causing memory leaks. On the other hand, it's okay to use a regular `Map` for the event listeners, given those are associated to an event type string.
 
-Let's move onto deciding whether to use inheritance, decorators, or functional composition, where each pattern shines, and when to avoid them.
+Let's move onto deciding whether to use inheritance, extension functions, or functional composition, where each pattern shines, and when to avoid them.
 
 ==== 5.2.3 Choosing between Composition and Inheritance
 
@@ -441,7 +441,7 @@ Decoration and functional composition are friendlier patterns because they aren'
 
 The functional approach is a bit more cumbersome to implement than simply mutating objects or adding base classes, but it offers the most flexibility. By avoiding changes to the underlying target, we keep objects easy to serialize into JSON, unencumbered by a growing collection of methods, and thus more readily compatible across our codebase.
 
-Furthermore, using base classes makes it a bit hard to reuse the logic at varying insertion points in our prototype chains. Using decorators, likewise, makes it challenging to add similar methods that support slightly different use cases. Using a functional approach leads to less coupling in this regard, but it could also complicate the underlying implementation of the makeup for objects, making it hard to decypher how their functionality ties in together, tainting our fundamental understanding of how code flows and making debugging sessions longer than need be.
+Furthermore, using base classes makes it a bit hard to reuse the logic at varying insertion points in our prototype chains. Using extension functions, likewise, makes it challenging to add similar methods that support slightly different use cases. Using a functional approach leads to less coupling in this regard, but it could also complicate the underlying implementation of the makeup for objects, making it hard to decypher how their functionality ties in together, tainting our fundamental understanding of how code flows and making debugging sessions longer than need be.
 
 As with most things programming, your codebase benefits from a semblance of consistency. Even if you use all three patterns, -- and others -- a codebase that uses half a dozen patterns in equal amounts is harder to understand, work with, and build on, than an equivalent codebase that instead uses one pattern for the vast majority of its code while using other patterns in smaller ways when warranted. Picking the right pattern for each situation and striving for consistency might seem at odds with each other, but this is again a balancing act. The trade-off is between consistency in the grand scale of our codebase versus simplicity in the local piece of code we're working on. The question to ask is then: are we obtaining enough of a simplicity gain that it warrants the sacrifice of some consistency?
 
