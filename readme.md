@@ -6,7 +6,7 @@
 
 [<img align='right' src='http://i.imgur.com/2QRmp82.png' />][toc]
 
-Modular JavaScript is a book series with the mission of improving our collective understanding of writing robust, well-tested, modular JavaScript code. Mastering Modular JavaScript is the second book in the series, and it discusses modular JavaScript application deveolpment. Mastering Modular JavaScript includes hundreds of real-world patterns and practices, as well as detailed explanations of what works and what hasn’t when it comes to leveraging ES6 in the wild.
+Modular JavaScript is a book series with the mission of improving our collective understanding of writing robust, well-tested, modular JavaScript code. Mastering Modular JavaScript is the second book in the series, and it discusses modular JavaScript application development. Mastering Modular JavaScript includes hundreds of real-world patterns and practices, as well as detailed explanations of what works and what hasn’t when it comes to leveraging ES6 in the wild.
 
 🗞 **Start** with the [book series launch announcement][announcement] on *Pony Foo*  
 🐤 **Share** a [message on *Twitter*][tweet] or within your social circles  
