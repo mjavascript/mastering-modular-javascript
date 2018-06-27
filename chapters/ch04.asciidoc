@@ -299,6 +299,8 @@ function getUserWebsite(user) {
 }
 ----
 
+Regardless of your flavor of choice when it comes to variable binding, bits of code that select some slice of application state are best shoved away from the relevant logic that will use this selected state to perform some action. This way, we're not distracted with concerns about how state is selected, instead of being focused on the action that our application logic is trying to carry out.
+
 When we want to name an aspect of a routine without adding a comment, we could create a function to host that functionality. Doing so doesn't just give a name to what the algorithm is doing, but it also allows us to push that code out of the way, leaving behind only the high-level description of what's going to happen.
 
 ==== 4.2.5 Flattening Nested Callbacks

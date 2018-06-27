@@ -35,7 +35,32 @@ When it comes to JavaScript, modularity is a modern concept. In this section we'
 
 In the early days, JavaScript was inlined in HTML `<script>` tags. At best, it was offloaded to dedicated script files, all of which shared a global scope.
 
-Any variables declared in one of these files or inline scripts would be imprinted on the global `window` object, creating leaks across entirely unrelated scripts that might've lead to conflicts or even broken experiences, where a variable in one script might inadvertently replace a global that another script was relying on.
+Any variables or bindings declared in one of these files or inline scripts would be imprinted on the global `window` object, creating leaks across entirely unrelated scripts that might've lead to conflicts or even broken experiences, where a variable in one script might inadvertently replace a global that another script was relying on.
+
+[source,html]
+----
+<script>
+  var initialized = false
+
+  if (!initialized) {
+    init()
+  }
+
+  function init() {
+    initialized = true
+    console.log('init')
+  }
+</script>
+
+<script>
+  if (initialized) {
+    console.log('was initialized!')
+  }
+
+  // even `init` has been implicitly made a global variable
+  console.log('init' in window)
+</script>
+----
 
 Eventually, as web applications started growing in size and complexity, the concept of scoping and the dangers of a global scope became evident and more well-known. Immediately-invoking function expressions (IIFE) were invented and became an instant mainstay. An IIFE worked by wrapping an entire file or portions of a file in a function that executed immediately after evaluation. Each function in JavaScript creates a new level of scoping, meaning `var` variable bindings would be contained by the IIFE. Even though variable declarations are hoisted to the top of their containing scope, they'd never become implicit globals, thanks to the IIFE wrapper, thus suppressing the brittleness of implicit JavaScript globals.
 
@@ -56,7 +81,7 @@ void function() {
 }()
 ----
 
-Using the IIFE pattern, libraries would typically create modules by exposing and then reusing a single binding on the `window` object, thus avoiding global namespace pollution. The next snippet shows how we might create a `mathlib` component with a `sum` method in one of these IIFE-based libraries. If we wanted to add more modules to `mathlib`, we could place each of them in a separate IIFE which adds its own methods to the `mathlib` public interface, while anything else could stay private to the component that defined the new portion of functionality.
+Using the IIFE pattern, libraries would typically create modules by exposing and then reusing a single binding on the `window` object, thus minimizing global namespace pollution. The next snippet shows how we might create a `mathlib` component with a `sum` method in one of these IIFE-based libraries. If we wanted to add more modules to `mathlib`, we could place each of them in a separate IIFE which adds its own methods to the `mathlib` public interface, while anything else could stay private to the component that defined the new portion of functionality.
 
 [source,javascript]
 ----
@@ -73,7 +98,7 @@ mathlib.sum(1, 2, 3)
 // <- 6
 ----
 
-This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers to -- for the first time -- safely concatenate every IIFE module into a single file, reducing the strain on the network.
+This pattern was, coincidentally, an open invitation for JavaScript tooling to burgeon, allowing developers to -- for the first time -- concatenate every IIFE module into a single file, reducing the strain on the network. Provided the primitive bundling solutions that existed at the time were able to figure out their way around automatic semicolon insertion and minified content without breaking your application logic.
 
 The problem in the IIFE approach was that there wasn't an explicit dependency tree. This means developers had to manufacture component file lists in a precise order, so that dependencies would load before any modules that depended on them did -- recursively.
 
@@ -160,7 +185,7 @@ Granted, npm wasn't limited to CommonJS modules or even JavaScript packages, but
 
 ==== 1.2.4 ES6, `import`, Babel, and Webpack
 
-As ES6 became standardized in June of 2015, and with Babel transpiling ES6 into ES5 long before then, a new revolution was quickly approaching. The ES6 specification included a module system native to JavaScript, often referred to as ECMAScript Modules (ESM).
+As ES6 became standardized in June of 2015, and with Babel transpiling ES6 into ES5 long before then, a new revolution was quickly approaching. The ES6 specification included a module syntax native to JavaScript, often referred to as ECMAScript Modules (ESM).
 
 ESM is largely influenced by CJS and its predecessors, offering a static declarative API as well as a promise-based dynamic programmable API, as illustrated next.
 
@@ -176,7 +201,7 @@ In ESM, too, every file is a module with its own scope and context. One major ad
 
 In Node.js v8.5.0, ESM support was introduced behind an `--experimental-modules` flag -- provided that we use the `.mjs` file extension for our modules. Most evergreen browsers already support ESM without flags.
 
-Webpack is a successor to Browserify that largely took over in the role of universal module bundler thanks to a broader set of features. Just like in the case of Babel and ES6, Webpack has long supported ESM with both its static `import` and `export` statements as well as the dynamic `import()` function-like expression. It has made a particularly fruitful adoption of ESM, in no little parts thanks to the introduction of a "code-splitting" mechanism whereby it's able to partition an application into different bundles to improve performance on first load experiences.
+Webpack is a successor to Browserify that largely took over in the role of universal module bundler thanks to a broader set of features. Just like in the case of Babel and ES6, Webpack has long supported ESM with both its static `import` and `export` statements as well as the dynamic `import()` function-like expression. It has made a particularly fruitful adoption of ESM, in no little part thanks to the introduction of a "code-splitting" mechanismfootnote:[Code-splitting lets you to split your application into several bundles based on different entry points, and also lets you extract dependencies shared across bundles into a single reusable bundle. Learn more at: https://mjavascript.com/out/code-splitting.] whereby it's able to partition an application into different bundles to improve performance on first load experiences.
 
 Given how ESM is native to the language, -- as opposed to CJS -- it can be expected to completely overtake the module ecosystem in a few years time.
 
@@ -226,7 +251,7 @@ The native JavaScript modules specification that eventually landed into the lang
 
 Up until the launch of a Gmail beta client in April, 2004, which demonstrated the power of asynchronous JavaScript HTTP requests to provide a single-page application experience, and then the initial release of jQuery in 2006, which provided a hassle-free cross-browser web development experience, JavaScript was seldom regarded as a serious modern development platform.
 
-With the advent of frameworks like Backbone, Angular, Ember, and React, new techniques and breakthroughs also made an uptick on the web. Writing code under ES6 and beyond, but then transpiling parts of that code down to ES5 to attain broader browser support; shared rendering, using the same code on both server and client to render a page quickly on initial page load and continue to load pages quickly upon navigation; automated code bundling, packing the modules that comprise an application into a single bundle for optimized delivery; bundle-splitting along routes, so that there are several bundles outputted, each optimized for the initially visited route; CSS bundling at the JavaScript module level, so that CSS -- which doesn't feature a native module system -- can also be split across bundles; and a myriad ways of optimizing assets like images at compile time, improving productivity during development while keeping production deployments highly performant, are all part of the iterative nature of innovation in the web.
+With the advent of frameworks like Backbone, Angular, Ember, and React, new techniques and breakthroughs also made an uptick on the web. Writing code under ES6 and beyond, but then transpiling parts of that code down to ES5 to attain broader browser support; shared rendering, using the same code on both server and client to render a page quickly on initial page load and continue to load pages quickly upon navigation; automated code bundling, packing the modules that comprise an application into a single bundle for optimized delivery; bundle-splitting along routes, so that there are several bundles outputted, each optimized for the initially visited route; CSS bundling at the JavaScript module level, so that CSS -- which doesn't feature a native module syntax -- can also be split across bundles; and a myriad ways of optimizing assets like images at compile time, improving productivity during development while keeping production deployments highly performant, are all part of the iterative nature of innovation in the web.
 
 This explosion of innovation doesn't stem from sheer creativity alone but also out of necessity: web applications are getting increasingly complex, as is their scope, purpose, and requirements. It follows logically, then, that the ecosystem around them would grow to accommodate those expanded requirements, in terms of better tooling, better libraries, better coding practices, architectures, standards, patterns, and more choice in general.
 
