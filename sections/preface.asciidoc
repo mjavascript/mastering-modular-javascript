@@ -1,6 +1,40 @@
 [preface]
 == Preface
 
+I started toying with Node.js -- and, unbeknownst to me, getting into a serious relationship with JavaScript -- at about the same time as I discovered open-source and fell in love with its practices. Coming from the closed-source landscape in C#, the open-source ecosystem around Node.js gave me a new perspective and joy in figuring out how to write robust code that others find pleasant enough to consume. It's with this background that I find myself always pondering about how an interface should be defined, who would be consuming it, and how they'd like to spend their time doing something else than figuring out what we originally intended them to do.
+
+=== Who Should Read This Book
+
+This book is meant for developers, enthusiasts, and professionals with a working knowledge of JavaScript and ES6footnote:[ES6 effected a profound change in the JavaScript language, introducing multiple syntax improvements, a few handfuls of new methods. This book assumes familiarity with JavaScript after ES6. You can learn more about ES6 syntax by visiting the following link for a crash course: https://mjavascript.com/out/es6.]. These developers, and anyone interested in learning more about writing modular code that's readable, maintainable, and scalable, even beyond the JavaScript language, shall benefit from reading _Mastering Modular JavaScript_.
+
+=== Why Modular JavaScript?
+
+The goal of this book is to offer an affable way of becoming a successful module author. It's not that writing JavaScript modules is particularly hard, but following sound design practices to ensure we deliver the right amounts of simplicity and flexibility so that consumers can rely on modules to be simple most of the time, but flexible when it matters, -- while keeping internal complexity in check -- is hardly a trivial task. I wrote bits and pieces about proper application design in JavaScript Application Designfootnote:[JavaScript Application Design is a book I published through Manning in 2015. It revolves around build processes, but also features chapters on managing complexity, on sensible asynchronous flow control code, on REST API design, and on JavaScript testing concerns. Learn more at: https://mjavascript.com/out/jad.] and for the Pony Foo blog, but I've been yearning to publish something more comprehensive that was exclusively dedicated to reasoning about, designing, and writing modular code.
+
+Though, I couldn't find any books that addressed the subject from a JavaScript point of view, you can easily find other books that touch on the subject of modular code, such as Code Complete or Clean Code, and leverage their teachings in your JavaScript development efforts. Mastering Modular JavaScript is an attempt to draw attention from what you should be doing, and instead focus on you coming to your own conclusions about what you should be doing and why -- without imposing axiomatic rules that only contribute to what artificially self-proclaims and positions itself as "clean code".
+
+This book tries to explain how you could be writing modular code without being overt. Instead, we'll try to shed light into the fundamentals behind modular architecture, and it's history when it comes to JavaScript, so that you earn a better understanding of what it means to write modular applications, and what's to be gained from doing so.
+
+Rather than rely on long-winded, pages-long, thoroughly analyzed, concrete examples, the book hopes to challenge you to apply its passages to the problems that you're trying to address in your own programs, and coming to your own realizations by weighing the benefits and drawbacks of taking one of a few possible approaches. In software, there is no such thing as one-size-fits-all, and you're often going to leverage your own best judgement to decide how to write it. All software adapts to the context that surrounds it, and if you've done any work at all involving software deployments or releases, then you surely are intimate with exactly how hard it is to cram the same piece of software into different execution environments.
+
+Just like with Practical Modern JavaScript, -- the first in the Modular JavaScript series -- this book has the goal of establishing a baseline we can take for granted in the rest of the Modular JavaScript series. After having learned all about the latest language features in Practical Modern JavaScript, and all about modular design thinking in this book, we'll be all set to discuss solution-specific concerns in Universal JavaScript and then testing and deployment in subsequent books, without necessarily delving too deeply into concepts taught in previous books. This incremental and modular approach is meant to be pervasive across the series, each book, each chapter, and each section.
+
+=== How Is This Book Organized?
+
+<<module-thinking>> discusses the evolution of modularity in the context of JavaScript. From the early days of embedding JavaScript in `onclick` attributes, to CommonJS and finally native ECMAScript modules. It then looks at the benefits of writing self-contained code, and of doing so at every level of a system: services, applications, components, modules, functions, blocks, and so on.
+
+<<modularity-principles>> covers the essentials of modular design, giving you a foundation from which you can write modules that are conscientious of their API surface, how it's --in all likelihood-- going to be consumed, where the responsibilities lie, and what belongs on the interface.
+
+A good portion of <<module-design>> is devoted to understanding what kind of problems you should be solving, and how to do it while keeping an eye on how the module and its interface may evolve, being shy about abstractions while waiting for clear patterns to emerge. <<module-design>> prods beneath the surface and gets you thinking of best practices around documentation, error handling, and following your own reasoning by applying your own context to the problem that is being resolved.
+
+In <<shaping-internals>>, we get comfortable talking about internal complexity, tight coupling, and weighing the merits of frameworks and conventions. The bulk of <<shaping-internals>> is spent discussing some of the many ways in which we can reduce complexity by refactoring our code. We then discuss the role of state in relation to complexity, and how it can be mitigated. Data structures play a role as well, as picking the right ones is both challenging and immensely rewarding when it comes to keeping complexity in check.
+
+<<modular-patterns-and-practices>> is specifically about JavaScript, detailing how we can leverage modern language constructs to write clear programs. This chapter also examines patterns such as inheritance and composition, leading into a discussion about which option is better depending on your use case. <<modular-patterns-and-practices>> is rounded out by tackling classic patterns like revealing modules, object factories, event emitters, and JSON message passing.
+
+<<development-methodology-and-philosophy>> describes the mindset of a battle-hardened module developer, addressing security concerns and dependency management, build and integration processes, interfaces and abstractions, and generally a potpourri of module design advice and best practices.
+
+Those of you who are already familiar with the history of modularity when it comes to JavaScript would do well to -- at the very least -- skim through the history lessons in the first chapter. If you're more of the type that's comfortable jumping around the pages in a book, I would still recommend reading through every chapter, given this relatively short book is more of a story to be told about well-reasoned programs than it is a compendium of recipes.
+
 === Conventions Used in This Book
 
 The following typographical conventions are used in this book:
@@ -9,55 +43,29 @@ _Italic_:: Indicates new terms, URLs, email addresses, filenames, and file exten
 
 +Constant width+:: Used for program listings, as well as within paragraphs to refer to program elements such as variable or function names, databases, data types, environment variables, statements, and keywords.
 
-**`Constant width bold`**:: Shows commands or other text that should be typed literally by the user.
-
-_++Constant width italic++_:: Shows text that should be replaced with user-supplied values or by values determined by context.
-
-
 [TIP]
 ====
-This element signifies a tip or suggestion.
-====
-
-[NOTE]
-====
-This element signifies a general note.
+This icon signifies a tip, suggestion, or general note.
 ====
 
 [WARNING]
 ====
-This element indicates a warning or caution.
+This icon indicates a warning or caution.
 ====
 
-=== Using Code Examples
-++++
-<!--PROD: Please reach out to author to find out if they will be uploading code examples to oreilly.com or their own site (e.g., GitHub). If there is no code download, delete this whole section. If there is, when you email digidist with the link, let them know what you filled in for title_title (should be as close to book title as possible, i.e., learning_python_2e). This info will determine where digidist loads the files.-->
-++++
-
-Supplemental material (code examples, exercises, etc.) is available for download at link:$$https://github.com/oreillymedia/title_title$$[].
-
-This book is here to help you get your job done. In general, if example code is offered with this book, you may use it in your programs and documentation. You do not need to contact us for permission unless you’re reproducing a significant portion of the code. For example, writing a program that uses several chunks of code from this book does not require permission. Selling or distributing a CD-ROM of examples from O’Reilly books does require permission. Answering a question by citing this book and quoting example code does not require permission. Incorporating a significant amount of example code from this book into your product’s documentation does require permission.
-
-We appreciate, but do not require, attribution. An attribution usually includes the title, author, publisher, and ISBN. For example: “_Book Title_ by Some Author (O’Reilly). Copyright 2012 Some Copyright Holder, 978-0-596-xxxx-x.”
-
-If you feel your use of code examples falls outside fair use or the permission given above, feel free to contact us at pass:[<a class="email" href="mailto:permissions@oreilly.com"><em>permissions@oreilly.com</em></a>].
-
-=== Safari® Books Online
+=== O'Reilly Safari
 
 [role = "safarienabled"]
 [NOTE]
 ====
-pass:[<a href="http://safaribooksonline.com" class="orm:hideurl:ital"><em class="hyperlink">Safari Books Online</em></a>] is an on-demand digital library that delivers expert pass:[<a href="https://www.safaribooksonline.com/explore/" class="orm:hideurl">content</a>] in both book and video form from the world&#8217;s leading authors in technology and business.
+pass:[<a href="http://oreilly.com/safari" class="orm:hideurl"><em class="hyperlink">Safari</em></a>] (formerly Safari Books Online) is a membership-based training and reference platform for enterprise, government, educators, and individuals.
 ====
 
-Technology professionals, software developers, web designers, and business and creative professionals use Safari Books Online as their primary resource for research, problem solving, learning, and certification training.
+Members have access to thousands of books, training videos, Learning Paths, interactive tutorials, and curated playlists from over 250 publishers, including O’Reilly Media, Harvard Business Review, Prentice Hall Professional, Addison-Wesley Professional, Microsoft Press, Sams, Que, Peachpit Press, Adobe, Focal Press, Cisco Press, John Wiley & Sons, Syngress, Morgan Kaufmann, IBM Redbooks, Packt, Adobe Press, FT Press, Apress, Manning, New Riders, McGraw-Hill, Jones & Bartlett, and Course Technology, among others.
 
-++++
-<p>Safari Books Online offers a range of <a href="https://www.safaribooksonline.com/pricing/" class="orm:hideurl">plans and pricing</a> for <a href="https://www.safaribooksonline.com/enterprise/" class="orm:hideurl">enterprise</a>, <a href="https://www.safaribooksonline.com/government/" class="orm:hideurl">government</a>, <a href="https://www.safaribooksonline.com/academic-public-library/" class="orm:hideurl">education</a>, and individuals.</p>
+For more information, please visit pass:[<a href="http://oreilly.com/safari" class="orm:hideurl"><em>http://oreilly.com/safari</em></a>].
 
-<p>Members have access to thousands of books, training videos, and prepublication manuscripts in one fully searchable database from publishers like O&#8217;Reilly Media, Prentice Hall Professional, Addison-Wesley Professional, Microsoft Press, Sams, Que, Peachpit Press, Focal Press, Cisco Press, John Wiley &amp; Sons, Syngress, Morgan Kaufmann, IBM Redbooks, Packt, Adobe Press, FT Press, Apress, Manning, New Riders, McGraw-Hill, Jones &amp; Bartlett, Course Technology, and hundreds <a href="https://www.safaribooksonline.com/our-library/" class="orm:hideurl">more</a>. For more information about Safari Books Online, please visit us <a class="orm:hideurl">online</a>.</p>
-++++
-
+[role="pagebreak-before"]
 === How to Contact Us
 
 Please address comments and questions concerning this book to the publisher:
@@ -73,11 +81,7 @@ Please address comments and questions concerning this book to the publisher:
 </ul>
 ++++
 
-We have a web page for this book, where we list errata, examples, and any additional information. You can access this page at link:$$http://www.oreilly.com/catalog/<catalog page>$$[].
-
-++++
-<!--Don't forget to update the link above.-->
-++++
+We have a web page for this book, where we list errata, examples, and any additional information. You can access this page at link:$$http://www.oreilly.com/catalog/0636920047124$$[].
 
 To comment or ask technical questions about this book, send email to pass:[<a class="email" href="mailto:bookquestions@oreilly.com"><em>bookquestions@oreilly.com</em></a>].
 
@@ -91,6 +95,8 @@ Watch us on YouTube: link:$$http://www.youtube.com/oreillymedia$$[]
 
 === Acknowledgments
 
-++++
-<!--Fill in...-->
-++++
+There are a lot of people to thank for _Mastering Modular JavaScript_ coming to fruition. First and foremost we have Virginia Wilson, the main content editor in charge of this book and the Modular JavaScript series at O'Reilly. She offered insight where it counted, was very understanding when my schedule tightened and the writing slowed down to a trickle, and always kept an extremely positive attitude about things!
+
+The technical reviewers were also out of this world. Mathias Bynens focused on making sure my comments around the ECMAScript specification were up to par, as usual. Ingvar Stepanyan always seems ready to jump at the chance of helping out with technical reviews for my books, and he's always offering unique points of views which result in more clear descriptions and more thorough examples, I'm incredibly grateful for his work. Adam Rackis has also been super helpful during technical review for the series, always providing solid commentary about bits that needed to be corrected, better fleshed out, or prose that might not have been all that clear.
+
+As usual, I'd also like to thank my wife, Marianela, for always standing right beside me through the emotional rollercoaster that is writing these books.
