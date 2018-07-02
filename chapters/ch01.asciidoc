@@ -233,7 +233,7 @@ When we don't plan in such a long-term form, an interesting thing occurs: our sy
 
 We'll devote an important part of this book to understanding how we can identify and leverage the right abstractions at the right time, so that the risk they incur is minimized.
 
-=== 1.5 Why Modular JavaScript?
+=== 1.5 Modular JavaScript: A Necessity
 
 Due to its history, JavaScript is particularly interesting when it comes to modular design. In the early days of the web, and for a long time, there weren't any established practices and few people knew the language beyond showing alert boxes. As a highly dynamic language that wasn't yet mature enough, JavaScript was at an odd place between statically typed languages like Java or C#, and more heavily used dynamic languages like Python or PHP.
 
