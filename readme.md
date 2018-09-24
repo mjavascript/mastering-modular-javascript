@@ -20,7 +20,7 @@ This book focuses on two aspects of JavaScript development: modularity and lever
 
 The book is publicly available in HTML format and **free forever**. Each book chapter is styled similarly to how Pony Foo blog posts _— such as the [book series launch announcement][announcement] —_ are styled, which makes for a fairly enjoyable read as far as HTML books go.
 
-[<img align='left' src='https://i.imgur.com/8R8wBTQ.png' />][toc]
+[<img align='left' src='https://i.imgur.com/iA9ak4K.png' />][toc]
 
 *Every book in the series will be distributed in this way.*
 
@@ -29,6 +29,10 @@ The book is publicly available in HTML format and **free forever**. Each book ch
 It took me a bit of time but I've managed to get the `git` repository to trigger builds on the O'Reilly build server. The build server then pings back to ponyfoo.com, letting the site know when a build is ready. Lastly, Pony Foo finally downloads the updated HTML files for the web version. Luckily I developed the code in such a way that I will be able to share HTML versions of other books in the series effortlessly.
 
 _**Read** the [HTML version of the book][toc] on Pony Foo! 🦄_
+
+<br>
+<br>
+<br>
 
 ## Source Code Repository!
 
