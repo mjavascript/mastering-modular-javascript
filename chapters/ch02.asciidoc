@@ -464,7 +464,7 @@ If we want to take things a bit further, we can chain onto the response object t
 [source,javascript]
 ----
 const res = await fetch('/api/users/john')
-const data = res.json()
+const data = await res.json()
 console.log(data.name)
 // <- 'John Doe'
 ----
