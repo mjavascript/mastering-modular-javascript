@@ -48,7 +48,7 @@ When we'd have to repeat ourselves by passing a lot of scope variables as functi
 
 ==== 4.1.3 Frameworks: the Good the Bad and the Ugly
 
-Conventions are useful because they allow for better self-direction amongst developers, without causing lagoons of inconsistency to spread across our codebase as fate would have it were we to allow a team of developers too much freedom without sound design direction and conventions that dictatehow different portions of an application should be shaped. A large number of conventions might hinder productivity, especially if some of our conventions appeared to work as if by magic.
+Conventions are useful because they allow for better self-direction amongst developers, without causing lagoons of inconsistency to spread across our codebase as fate would have it were we to allow a team of developers too much freedom without sound design direction and conventions that dictate how different portions of an application should be shaped. A large number of conventions might hinder productivity, especially if some of our conventions appeared to work as if by magic.
 
 When it comes to conventions, frameworks are a special case. Frameworks are packed to the brim with conventions and best practices. Some of them live in the library and tooling ecosystem around the framework, while many live in the shape our code takes when we rely on said framework. Upon adopting a framework, we're buying into its conventions and practices. Most modern JavaScript frameworks offer ways of breaking our application into small chunks, regardless of whether the framework is for the client or server.
 
