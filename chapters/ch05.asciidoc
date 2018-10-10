@@ -216,7 +216,7 @@ const finalValues = [1, 2, 3, 4, 5]
 // <- [6, 8, 10]
 ----
 
-A better approach would be to create new bindings every time, computing their values based on the previous binding, and picking up the benefits of using `const` in doing so -- where we can rest assured that the binding doesn't change later in the flow.
+A better approach would be to create new bindings every time, computing their values based on the previous binding, and picking up the benefits of using `const` in doing so -- where we can be rest assured that the binding doesn't change later in the flow.
 
 [source,javascript]
 ----
