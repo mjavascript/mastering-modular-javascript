@@ -446,7 +446,7 @@ On the same vein, we should avoid optional input parameters which transform the 
 
 It isn't necessary to treat failure and success with the same response shape, meaning that failure results can always be `null` or `undefined`, while success results might be an array list. However, consistency should be required across all failure cases and across all sucess cases, respectively.
 
-Having consistent data types mitigates surpises and improves the confidence a consumer has in our API.
+Having consistent data types mitigates surprises and improves the confidence a consumer has in our API.
 
 ==== 2.2.4 Simplicity
 
