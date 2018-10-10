@@ -685,7 +685,7 @@ class Value {
     return this.state
   }
 }
-console.log(new Value(5).add(3).multiply(2)) // <- 16
+console.log(+new Value(5).add(3).multiply(2)) // <- 16
 ----
 
 Consider now, in contrast, the following piece of code. Here we have a couple of functions that purely compute addition and multiplication of their inputs, which are idempotent, and which can be used without boxing inputs into instances of `Value`, making the code more transparent to the reader. The idempotence aspect is of great benefit, because it makes the code more digestible: whenever we add `3` to `5` we know the output will be `8`, whereas whenever we add `3` to the current state we only know that `Value` will increment its state by `3`.
