@@ -108,7 +108,7 @@ We could've used more variables without creating a function, inlining the comput
 
 [source,javascript]
 ----
-const hasToken = auth === undefined || auth.token === undefined
+const hasToken = auth !== undefined && auth.token !== undefined
 const hasValidToken = hasToken && auth.expires > Date.now()
 if (hasValidToken) {
   return
